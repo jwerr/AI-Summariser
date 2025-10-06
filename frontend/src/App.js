@@ -1,70 +1,52 @@
-import { useEffect, useState, useCallback } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
 import Login from "./components/Login";
+import Signup from "./components/Signup";
+import Dashboard from "./components/Dashboard";
+import Profile from "./components/Profile";
 
 export default function App() {
-  const [me, setMe] = useState(null);
-  const [err, setErr] = useState("");
-
-  // fetch current user from session cookie
-  const fetchMe = useCallback(async () => {
-    try {
-      const r = await fetch("/api/me", { credentials: "include" });
-      setMe(r.ok ? await r.json() : null);
-    } catch {
-      setMe(null);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchMe();
-  }, [fetchMe]);
-
-  const logout = async () => {
-    setErr("");
-    await fetch("/api/logout", { method: "POST", credentials: "include" });
-    setMe(null);
-  };
+  const [user, setUser] = useState(null);
 
   return (
-    <div className="min-h-screen bg-red-600 text-white">
-      {/* Header */}
-      <header className="w-full px-6 py-3 border-b bg-white">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-semibold">AI Summariser</h1>
+    <Router>
+      <Routes>
+        {/* Root route -> if logged in go to Dashboard, else go to Login */}
+        <Route
+          path="/"
+          element={
+            user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
+          }
+        />
 
-          {/* Right side: Login / User */}
-          <div>
-            {me ? (
-              <div className="flex items-center gap-3">
-                {me.picture && (
-                  <img
-                    src={me.picture}
-                    alt=""
-                    className="h-8 w-8 rounded-full object-cover"
-                  />
-                )}
-                <span className="text-sm">{me.name || me.email}</span>
-                <button className="px-3 py-1 border rounded" onClick={logout}>
-                  Logout
-                </button>
-              </div>
+        {/* Login & Signup */}
+        <Route path="/login" element={<Login onLoggedIn={setUser} />} />
+        <Route path="/signup" element={<Signup onSignedUp={setUser} />} />
+
+        {/* Dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            user ? (
+              <Dashboard user={user} onLogout={() => setUser(null)} />
             ) : (
-              // pass fetchMe so name shows immediately after sign-in
-              <Login onLoggedIn={fetchMe} />
-            )}
-          </div>
-        </div>
-      </header>
+              <Navigate to="/login" />
+            )
+          }
+        />
 
-      {/* Main */}
-      <main className="max-w-5xl mx-auto p-6">
-        {err && <p className="text-red-600 text-sm">{err}</p>}
-        {me ? (
-          <p className="text-gray-700">Welcome, <b>{me.name || me.email}</b> 👋</p>
-        ) : (
-          <p className="text-gray-600">Please sign in to continue.</p>
-        )}
-      </main>
-    </div>
+        {/* Profile Page */}
+        <Route
+          path="/profile"
+          element={
+            user ? (
+              <Profile user={user} onLogout={() => setUser(null)} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
