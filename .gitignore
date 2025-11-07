@@ -1,5 +1,9 @@
+# macOS
+.DS_Store
+**/.DS_Store
 
-# Never commit local env files
+# env files
 .env
 **/.env
 backend/.env
+frontend/.env
