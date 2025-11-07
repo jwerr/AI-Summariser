@@ -1,0 +1,27 @@
+{
+  "meeting_id": 42,
+  "title": "qwertyuiop",
+  "user_id": 5,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_42_20251030T011325Z_zoom-training-transcript.pdf",
+  "generated_at": "2025-10-30T01:13:25.813081Z",
+  "status": "ready",
+  "summary_text": "Manhattan Community Board 3: fancy new warnings.",
+  "key_points": [
+    "Co-host functionality and limitations discussed",
+    "CB3 login information will be sent to members",
+    "Difference between meetings and webinars explained",
+    "Zoom update to version 5.2.4 required",
+    "Best practices for managing Zoom meetings shared",
+    "Importance of muting participants when not speaking emphasized"
+  ],
+  "decisions": [
+    "All members except Clint were given co-host ability",
+    "Meetings will continue to be run under the meeting function of Zoom"
+  ],
+  "action_items": [
+    "Send CB3 login information to all members",
+    "Ensure all members update Zoom to version 5.2.4"
+  ],
+  "completed_at": "2025-10-30T01:13:30.025605Z"
+}

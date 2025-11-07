@@ -1,0 +1,14 @@
+{
+  "meeting_id": 38,
+  "title": "asdfghjkl",
+  "user_id": 13,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_38_20251029T024705Z_zoom-training-transcript.pdf",
+  "generated_at": "2025-10-29T02:47:06.325096Z",
+  "status": "ready",
+  "summary_text": "WEBVTT 1 00:00:07.560 --> 00:00:08.970 Manhattan Community Board 3: fancy new warnings.",
+  "key_points": [],
+  "decisions": [],
+  "action_items": [],
+  "completed_at": "2025-10-29T02:47:06.458939Z"
+}

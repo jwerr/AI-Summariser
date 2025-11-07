@@ -1,0 +1,14 @@
+{
+  "meeting_id": 39,
+  "title": "qwertyuiop",
+  "user_id": 13,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_39_20251029T024736Z_Sample_Project_Kickoff_Transcript.txt",
+  "generated_at": "2025-10-29T02:47:41.339210Z",
+  "status": "ready",
+  "summary_text": "Project Kickoff Meeting – Zoom Date: 2025-10-10 10:00–10:45 AM ET Participants: Shiva (PM), Arul (FE), Priya (BE), Sam (Data), Nina (QA), Omar (DevOps) Agenda: 1) Scope & success criteria 2) Milestones & dates 3) Risks & mitigation 4)…",
+  "key_points": [],
+  "decisions": [],
+  "action_items": [],
+  "completed_at": "2025-10-29T02:47:41.353512Z"
+}

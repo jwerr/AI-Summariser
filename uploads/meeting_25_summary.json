@@ -1,0 +1,29 @@
+{
+  "meeting_id": 25,
+  "title": "Sprint planning 7",
+  "user_id": 7,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_25_20251029T125544Z_zoom-training-transcript.pdf",
+  "generated_at": "2025-10-29T12:55:47.027634Z",
+  "status": "ready",
+  "summary_text": "Manhattan Community Board 3: fancy new warnings.",
+  "key_points": [
+    "Co-host functionality and limitations",
+    "CB3 login information distribution",
+    "Difference between meetings and webinars",
+    "Zoom update to version 5.2.4",
+    "Best practices for managing Zoom meetings",
+    "Screen view options: speaker view vs gallery view",
+    "Importance of muting participants when not speaking",
+    "Troubleshooting audio issues"
+  ],
+  "decisions": [
+    "Everyone except Clint was given co-host ability",
+    "CB3 login information will be sent to those who need it"
+  ],
+  "action_items": [
+    "Send CB3 login information to members",
+    "Ensure all members update Zoom to version 5.2.4"
+  ],
+  "completed_at": "2025-10-29T12:55:51.919169Z"
+}

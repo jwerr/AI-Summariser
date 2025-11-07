@@ -22,29 +22,34 @@ export default function Signup({ onSignedUp }) {
     }
 
     try {
-      // Mock API — replace with your backend API
       const res = await fetch("/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ firstName, lastName, email, password }),
+        // 👇 match backend’s field names exactly
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          password,
+        }),
       });
 
       if (res.ok) {
         const data = await res.json();
         onSignedUp(data);
 
-        // Show welcome message
         setSuccess(
           `Hey ${firstName}, you have entered into AI Summarizing World 🚀`
         );
 
-        // Redirect after 2 seconds
-        setTimeout(() => navigate("/Login"), 2000);
+        setTimeout(() => navigate("/login"), 2000);
       } else {
-        setError("Signup failed. Try again.");
+        const err = await res.json().catch(() => ({}));
+        setError(err.detail || "Signup failed. Try again.");
       }
-    } catch {
+    } catch (err) {
+      console.error(err);
       setError("Something went wrong. Please try again.");
     }
   };
@@ -82,7 +87,6 @@ export default function Signup({ onSignedUp }) {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               className="w-1/2 px-4 py-2 border rounded-lg focus:ring focus:ring-purple-300"
-              required
             />
           </div>
 

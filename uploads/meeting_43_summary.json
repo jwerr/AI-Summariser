@@ -1,0 +1,29 @@
+{
+  "meeting_id": 43,
+  "title": "Sprint Planning",
+  "user_id": 1,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_43_20251030T221040Z_Development_Sprint_Transcript.txt",
+  "generated_at": "2025-10-30T22:10:43.563097Z",
+  "status": "ready",
+  "summary_text": "Meeting Transcript: Development Sprint Review – November 4, 2025 Participants: - Arul (Scrum Master) - Alex (Frontend Developer) - Shiva (Backend Developer) - Robert (QA Engineer) - Steve (UI/UX Designer) Arul: Alright…",
+  "key_points": [
+    "Backend refactor completed",
+    "New caching layer improved API response time by 40%",
+    "Landing page layout updated with improved accessibility",
+    "Need to test landing page with screen readers",
+    "Next week's deployment preparation",
+    "Next team retrospective scheduled for November 18th"
+  ],
+  "decisions": [
+    "Log in 20 minutes earlier for next week's deployment",
+    "Finalize next team retrospective meeting time"
+  ],
+  "action_items": [
+    "Alex to test backend with new frontend build",
+    "Robert to test landing page with screen readers",
+    "Everyone to log in by 9:10 AM next Wednesday",
+    "Alex to bring GitHub issue summary and PR metrics for retrospective"
+  ],
+  "completed_at": "2025-10-30T22:10:48.507628Z"
+}

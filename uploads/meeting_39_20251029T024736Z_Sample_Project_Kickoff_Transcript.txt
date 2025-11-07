@@ -1,0 +1,58 @@
+Project Kickoff Meeting – Zoom
+Date: 2025-10-10 10:00–10:45 AM ET
+Participants: Shiva (PM), Arul (FE), Priya (BE), Sam (Data), Nina (QA), Omar (DevOps)
+
+Agenda:
+1) Scope & success criteria
+2) Milestones & dates
+3) Risks & mitigation
+4) Action items & owners
+
+[00:00] Shiva (PM): Thanks for joining. Goal today: lock scope, milestones, and owners for our AI Meeting Summariser MVP.
+[00:15] Arul (FE): From the frontend side, we’ll use React + Tailwind. I’ll add threaded “meeting pages” so clicking a meeting opens a dedicated route, similar to chat threads.
+[00:32] Priya (BE): Backend is FastAPI with Postgres + pgvector. Endpoints: /api/meetings, /api/meetings/:id/summary, /api/meetings/:id/qa. We’ll store transcripts and generated summaries as JSON.
+[00:50] Sam (Data): For summarization we’ll start with extractive → then add LLM. I’ll define a schema: one_liner, key_points[], decisions[], action_items[].
+[01:05] Nina (QA): Please log LLM calls. We need reproducible test fixtures and redaction for PII in logs.
+[01:15] Omar (DevOps): I’ll set up Docker Compose: app, db (Postgres), and a vector extension. CI will run pytest and ESLint on PRs.
+
+[02:00] Shiva: Success criteria: (a) upload transcript, (b) click Summarize, (c) see structured JSON, (d) view “Key Points / Decisions / Action Items” cards.
+[02:12] Priya: I’ll expose a /health and /ping for the dashboard to verify backend availability.
+[02:25] Sam: For the MVP, decisions can be detected by cues like “we decided”, “let’s choose”, “finalize”. Action items = owner mentions like “@name do X by YYYY-MM-DD”.
+[02:38] Arul: I’ll highlight @mentions and phrases like “due …” in the transcript view.
+[02:46] Nina: Edge cases: very long transcripts, missing owners, non-English lines. We should handle empty summaries gracefully (don’t crash UI).
+
+[05:10] Shiva: Timeline. Milestone 1 (Oct 14): upload + summarize end to end. Milestone 2 (Oct 18): thread pages + Q&A box. Milestone 3 (Oct 22): calendar suggestion buttons.
+[05:25] Omar: Environments: dev (local), staging (fly.io), prod (later). Feature flags to toggle providers (Zoom/Teams/Meet).
+
+[07:00] Priya: Decision: Use UUID as meeting id and store summaries in /uploads as meeting_{id}_summary.json.
+[07:12] Sam: Decision: First pass uses TextRank + heuristics; second pass uses LLM when API key is present.
+[07:25] Arul: Decision: Keep Dashboard simple; detailed work happens on /meeting/:id tabs.
+[07:36] Nina: Decision: Minimum test suite: 10 unit tests + 3 integration tests.
+[07:46] Shiva: Decision: Sprint length = 2 weeks.
+
+[09:00] Sam: Action: @sam set keyword list for decisions by 2025-10-12.
+[09:05] Arul: Action: @arul implement MeetingThread tabs (summary/transcript/qa) by 2025-10-13.
+[09:10] Priya: Action: @priya add /api/meetings/:id/qa and JSON schema validation by 2025-10-13.
+[09:15] Nina: Action: @nina write fixtures + ESLint/pytest CI by 2025-10-14.
+[09:20] Omar: Action: @omar dockerize Postgres with pgvector and set up migrations by 2025-10-14.
+[09:25] Shiva: Action: @shiva define success metrics and update README by 2025-10-12.
+
+[11:00] Shiva: Risks: (1) API limits for LLM; (2) Large file uploads; (3) Privacy concerns.
+[11:10] Priya: Mitigation: (1) Mock LLM fallback; (2) 50MB file cap + chunking; (3) redact emails/phone before logging.
+[11:25] Nina: Add rate limiting and server-side validation for file types (.txt, .vtt, .srt, .docx, .pdf).
+
+[12:00] Shiva: Any blockers?
+[12:03] Arul: None.
+[12:05] Priya: None.
+[12:06] Sam: None.
+[12:08] Nina: None.
+[12:10] Omar: None.
+
+[12:20] Shiva: Great. Recap:
+- Scope: upload → summarize → view cards; threads per meeting
+- Tech: React/Tailwind, FastAPI/Postgres/pgvector
+- Decisions: UUID ids; JSON schema; MVP TextRank → LLM fallback
+- Milestones: Oct 14, 18, 22
+- Owners: assigned; dates noted above
+
+[12:45] Shiva: Closing. Next sync: 2025-10-16 10 AM ET.

@@ -1,0 +1,29 @@
+{
+  "meeting_id": 47,
+  "title": "Deployment Plan meeting",
+  "user_id": 16,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_47_20251030T233519Z_Development_Sprint_Transcript.txt",
+  "generated_at": "2025-10-30T23:35:22.956550Z",
+  "status": "ready",
+  "summary_text": "Meeting Transcripts Participants: - Arul (Scrum Master) - Alex (Frontend Developer) - Shiva (Backend Developer) - Robert (QA Engineer) - Steve (UI/UX Designer) Arul: Alright team, let’s start today’s sprint review.",
+  "key_points": [
+    "Backend refactor completed",
+    "New caching layer reduced API response time by 40%",
+    "Landing page layout updated with improved accessibility labels",
+    "Need to test landing page with screen readers",
+    "Next week's deployment requires early login for staging verification",
+    "Next team retrospective meeting scheduled for November 18th"
+  ],
+  "decisions": [
+    "Finalize early login time for deployment at 9:10 AM next Wednesday",
+    "Schedule next team retrospective meeting for November 18th at 4 PM"
+  ],
+  "action_items": [
+    "Alex to test backend changes with new frontend build",
+    "Robert to test landing page with screen readers",
+    "Everyone to log in 20 minutes earlier for deployment",
+    "Alex to bring GitHub issue summary and PR metrics to retrospective"
+  ],
+  "completed_at": "2025-10-30T23:35:28.269504Z"
+}

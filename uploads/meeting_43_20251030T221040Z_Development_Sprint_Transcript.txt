@@ -1,0 +1,28 @@
+Meeting Transcript: Development Sprint Review – November 4, 2025
+
+Participants:
+- Arul (Scrum Master)
+- Alex (Frontend Developer)
+- Shiva (Backend Developer)
+- Robert (QA Engineer)
+- Steve (UI/UX Designer)
+
+Arul: Alright team, let’s start today’s sprint review. Shiva, how’s the backend refactor coming along?
+
+Shiva: It’s done! The new caching layer reduced API response time by nearly 40%.
+
+Alex: That’s great! I’ll test it with the new frontend build once you push the latest changes.
+
+Steve: I’ve updated the landing page layout and improved the accessibility labels. We might need to test it again with screen readers.
+
+Robert: I’ll take care of that. Also, for next week’s deployment, we should all **log in 20 minutes earlier** than usual to verify the staging environment before the client demo.
+
+Arul: Excellent point, Robert. Let’s finalize that. Everyone, please be ready by 9:10 AM next Wednesday.
+
+Steve: Got it.
+
+Arul: Finally, let’s plan our **next team retrospective meeting two weeks from today — November 18th at 4 PM**. We’ll discuss sprint velocity and open issues.
+
+Alex: Perfect. I’ll bring the GitHub issue summary and PR metrics.
+
+Arul: Thanks, everyone. Great progress this sprint — keep it going!

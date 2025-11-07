@@ -1,0 +1,26 @@
+{
+  "meeting_id": 44,
+  "files": [
+    {
+      "filename": "zoom-training-transcript.pdf",
+      "stored_as": "meeting_44_20251030T165510Z_zoom-training-transcript.pdf",
+      "path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_44_20251030T165510Z_zoom-training-transcript.pdf",
+      "size": 59183,
+      "uploaded_at": "20251030T165510Z"
+    },
+    {
+      "filename": "Development_Sprint_Transcript.txt",
+      "stored_as": "meeting_44_20251030T220643Z_Development_Sprint_Transcript.txt",
+      "path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_44_20251030T220643Z_Development_Sprint_Transcript.txt",
+      "size": 1255,
+      "uploaded_at": "20251030T220643Z"
+    },
+    {
+      "filename": "Development_Sprint_Transcript.txt",
+      "stored_as": "meeting_44_20251030T224857Z_Development_Sprint_Transcript.txt",
+      "path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_44_20251030T224857Z_Development_Sprint_Transcript.txt",
+      "size": 1208,
+      "uploaded_at": "20251030T224857Z"
+    }
+  ]
+}

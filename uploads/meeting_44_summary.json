@@ -1,0 +1,29 @@
+{
+  "meeting_id": 44,
+  "title": "QWERTYUIODS",
+  "user_id": 1,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_44_20251030T224857Z_Development_Sprint_Transcript.txt",
+  "generated_at": "2025-10-30T22:49:00.256409Z",
+  "status": "ready",
+  "summary_text": "Meeting Transcripts Participants: - Arul (Scrum Master) - Alex (Frontend Developer) - Shiva (Backend Developer) - Robert (QA Engineer) - Steve (UI/UX Designer) Arul: Alright team, let’s start today’s sprint review.",
+  "key_points": [
+    "Backend refactor completed",
+    "New caching layer reduced API response time by 40%",
+    "Landing page layout updated with improved accessibility labels",
+    "Testing needed with screen readers",
+    "Next week's deployment requires early login",
+    "Next team retrospective meeting scheduled"
+  ],
+  "decisions": [
+    "Finalize early login for next week's deployment",
+    "Schedule next team retrospective meeting for November 18th at 4 PM"
+  ],
+  "action_items": [
+    "Alex to test new frontend build after backend changes are pushed",
+    "Robert to test landing page with screen readers",
+    "Everyone to log in by 9:10 AM next Wednesday",
+    "Alex to bring GitHub issue summary and PR metrics to retrospective"
+  ],
+  "completed_at": "2025-10-30T22:49:04.341451Z"
+}

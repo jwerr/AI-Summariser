@@ -1,0 +1,35 @@
+{
+  "meeting_id": 46,
+  "title": "Sprint",
+  "user_id": 5,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_46_20251030T225719Z_Project_Sync_Transcript.txt",
+  "generated_at": "2025-10-30T22:57:27.909429Z",
+  "status": "ready",
+  "summary_text": "Meeting Transcript: Project Sync – October 30, 2025 Participants: - Arul (Team Lead) - Alex (Frontend Developer) - Shiva (Backend Developer) - Steve (Designer) - Robert (QA Engineer) Arul: Good morning everyone!",
+  "key_points": [
+    "Dashboard UI nearly complete",
+    "Dark mode toggle and responsive layout pending",
+    "UI testing to follow final build",
+    "Color palette adjustment for accessibility needed",
+    "Backend summarization endpoint functioning",
+    "Database connection issue resolved",
+    "Testing on summary output indicates need for better sentence trimming",
+    "Upcoming event setup time confirmed",
+    "Next full project review meeting scheduled"
+  ],
+  "decisions": [
+    "Adjust summarization prompt for complete sentences",
+    "Prepare sprint summary report for next meeting"
+  ],
+  "action_items": [
+    "Alex to finalize dark mode toggle and responsive layout by tomorrow",
+    "Steve to assist with UI testing after final build",
+    "Steve to share redesign for color palette today",
+    "Shiva to adjust summarization prompt before tomorrow's build",
+    "Steve to prepare banner designs and presentation slides before event",
+    "Robert to compile testing insights by next Wednesday",
+    "Team to block calendars for project review on November 13th at 3 PM"
+  ],
+  "completed_at": "2025-10-30T22:57:33.313855Z"
+}

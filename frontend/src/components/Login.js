@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { Link, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+
+const API = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 export default function Login({ onLoggedIn }) {
   const [email, setEmail] = useState("");
@@ -9,30 +10,63 @@ export default function Login({ onLoggedIn }) {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  async function fetchMe() {
+    const r = await fetch(`${API}/api/me`, { credentials: "include" });
+    if (!r.ok) throw new Error(`me() failed: ${r.status}`);
+    return r.json();
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch(`${API}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        onLoggedIn(data);
-        navigate("/Dashboard");  // ✅ Correct path
-      } else {
+      if (!res.ok) {
         setError("Invalid credentials");
+        return;
       }
-    } catch {
+
+      // use cookie-based session to load full profile
+      const profile = await fetchMe();
+      onLoggedIn(profile);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
       setError("Something went wrong");
     }
   };
+
+  async function onGoogleCredential(credential) {
+    setError("");
+    try {
+      // 1) Exchange Google credential with backend (sets session cookie)
+      const r = await fetch(`${API}/api/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // IMPORTANT: allow cookie
+        body: JSON.stringify({ credential }),
+      });
+      if (!r.ok) {
+        const msg = await r.text();
+        throw new Error(`Google auth failed: ${r.status} ${msg}`);
+      }
+
+      // 2) Fetch profile using the cookie
+      const profile = await fetchMe(); // { id, email, name, picture, ... }
+      onLoggedIn(profile);
+      navigate("/dashboard");
+    } catch (e) {
+      console.error(e);
+      setError("Google sign-in failed");
+    }
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-200 to-indigo-200">
@@ -42,26 +76,9 @@ export default function Login({ onLoggedIn }) {
         </h2>
 
         <GoogleLogin
-  onSuccess={(cred) => {
-    try {
-      const payload = jwtDecode(cred.credential);
-      // payload has: email, name, given_name, picture, sub, etc.
-      onLoggedIn({
-        email: payload.email,
-        firstName: payload.given_name || payload.name,
-        picture: payload.picture,
-        sub: payload.sub,
-      });
-      navigate("/dashboard"); // path is lowercase
-    } catch {
-      setError("Google sign-in: invalid token");
-    }
-  }}
-  onError={() => alert("Google sign-in failed")}
-/>
-
-
-
+          onSuccess={(resp) => onGoogleCredential(resp.credential)}
+          onError={() => setError("Google sign-in failed")}
+        />
 
         <div className="my-4 text-gray-500 flex items-center">
           <hr className="flex-grow border-gray-300" />

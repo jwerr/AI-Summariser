@@ -1,0 +1,35 @@
+{
+  "meeting_id": 48,
+  "title": "New Joinee Meeting",
+  "user_id": 16,
+  "platform": "Microsoft Teams",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_48_20251030T234007Z_Project_Sync_Transcript.txt",
+  "generated_at": "2025-10-30T23:40:07.775733Z",
+  "status": "ready",
+  "summary_text": "Meeting Transcript: Project Sync – October 30, 2025 Participants: - Arul (Team Lead) - Alex (Frontend Developer) - Shiva (Backend Developer) - Steve (Designer) - Robert (QA Engineer) Arul: Good morning everyone!",
+  "key_points": [
+    "Dashboard UI nearly complete",
+    "Dark mode toggle and responsive layout adjustments needed",
+    "UI testing to follow final build",
+    "Color palette adjustment for accessibility",
+    "Backend summarization endpoint functioning",
+    "Database connection issue resolved",
+    "Testing insights on summary output",
+    "Need for better sentence trimming",
+    "Upcoming event setup time",
+    "Next full project review meeting scheduled"
+  ],
+  "decisions": [
+    "Adjust summarization prompt for complete sentences",
+    "Prepare sprint summary report for next meeting",
+    "Block calendars for project review on November 13th"
+  ],
+  "action_items": [
+    "Alex to finalize dark mode toggle and responsive layout by tomorrow",
+    "Steve to share redesign for color palette today",
+    "Shiva to adjust summarization prompt before tomorrow's build",
+    "Steve to prepare banner designs and presentation slides before event",
+    "Robert to compile testing insights by next Wednesday"
+  ],
+  "completed_at": "2025-10-30T23:40:17.064182Z"
+}

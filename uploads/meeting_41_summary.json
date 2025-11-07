@@ -1,0 +1,29 @@
+{
+  "meeting_id": 41,
+  "title": "ASDFGHJKL",
+  "user_id": 14,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser_3/AI-Summariser-2/uploads/meeting_41_20251030T010051Z_zoom-training-transcript.pdf",
+  "generated_at": "2025-10-30T01:00:52.457551Z",
+  "status": "ready",
+  "summary_text": "Manhattan Community Board 3: fancy new warnings.",
+  "key_points": [
+    "Co-host functionality and limitations",
+    "CB3 login information for meetings",
+    "Difference between meetings and webinars",
+    "Zoom update to version 5.2.4",
+    "Best practices for managing Zoom meetings",
+    "Screen view options: speaker view vs gallery view",
+    "Importance of muting participants when not speaking",
+    "Troubleshooting audio issues"
+  ],
+  "decisions": [
+    "Everyone except Clint was given co-host ability",
+    "CB3 login information will be sent to all members"
+  ],
+  "action_items": [
+    "Send CB3 login information to all members",
+    "Ensure all members update Zoom to version 5.2.4"
+  ],
+  "completed_at": "2025-10-30T01:00:57.656095Z"
+}

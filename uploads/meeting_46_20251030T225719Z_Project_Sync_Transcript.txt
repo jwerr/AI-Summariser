@@ -1,0 +1,36 @@
+Meeting Transcript: Project Sync – October 30, 2025
+
+Participants:
+- Arul (Team Lead)
+- Alex (Frontend Developer)
+- Shiva (Backend Developer)
+- Steve (Designer)
+- Robert (QA Engineer)
+
+Arul: Good morning everyone! Let’s start with our weekly project sync. First, quick updates—how’s the dashboard progress going?
+
+Alex: Morning! The dashboard UI is nearly done. I just need one more day to finalize the dark mode toggle and fix the responsive layout.
+
+Steve: I’ll help with UI testing after Alex pushes the final build. Also, I noticed the color palette could be slightly adjusted for accessibility contrast. I’ll share a quick redesign today.
+
+Shiva: On the backend side, the summarization endpoint is working fine now. I fixed the database connection issue with PostgreSQL, so the meeting transcripts are being stored correctly.
+
+Robert: Great! I ran tests on yesterday’s summary output. Everything looks smooth, but we might need better sentence trimming for long paragraphs—it’s cutting off awkwardly sometimes.
+
+Arul: Good catch. Shiva, can you tweak the summarization prompt so it focuses on complete sentences?
+
+Shiva: Sure, I’ll adjust that before tomorrow’s build.
+
+Arul: Perfect. Now, about the upcoming event next week — please remember that we need everyone to come in 30 minutes earlier for setup. The session starts at 10 AM, so be here by 9:30 sharp.
+
+Steve: Got it. I’ll make sure the banner designs and presentation slides are ready before that day.
+
+Arul: Excellent. Finally, let’s schedule our next full project review meeting two weeks from today, that’s Thursday, November 13th at 3 PM. Please block your calendars for that.
+
+Alex: Sounds good. Should we prepare the sprint summary report for that one?
+
+Arul: Yes, please. Include metrics like user feedback, API latency, and summarization accuracy.
+
+Robert: I’ll compile the testing insights by next Wednesday.
+
+Arul: Awesome team. That wraps it up for today. Thanks, everyone!
