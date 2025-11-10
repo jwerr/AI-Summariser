@@ -7,7 +7,6 @@ const API = process.env.REACT_APP_API_URL || ""; // proxy or set env var
 const PLATFORMS = ["Zoom", "Google Meet", "Microsoft Teams", "Webex", "Other"];
 
 /* -------------------------- helpers: date parsing -------------------------- */
-// months map for "Nov 5", "September 12th" etc.
 const MONTHS = {
   jan: 1, january: 1,
   feb: 2, february: 2,
@@ -23,10 +22,7 @@ const MONTHS = {
   dec: 12, december: 12,
 };
 
-// pad 2-digits
 const p2 = (n) => String(n).padStart(2, "0");
-
-// return ISO string with local timezone as "YYYY-MM-DDTHH:MM:SS"
 function toLocalISO(dateObj) {
   const y = dateObj.getFullYear();
   const m = p2(dateObj.getMonth() + 1);
@@ -34,11 +30,8 @@ function toLocalISO(dateObj) {
   const hh = p2(dateObj.getHours());
   const mm = p2(dateObj.getMinutes());
   const ss = p2(dateObj.getSeconds());
-  // we intentionally DO NOT append Z; CalendarPanel can send this as local tz
   return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
 }
-
-// basic time parser -> returns {h24, m}
 function parseTimeBits(str) {
   if (!str) return null;
   const m = str.trim().match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i);
@@ -48,20 +41,14 @@ function parseTimeBits(str) {
   const ap = m[3]?.toLowerCase();
   if (ap === "pm" && h < 12) h += 12;
   if (ap === "am" && h === 12) h = 0;
-  if (!ap && h <= 7) h += 12; // heuristic: 3 => 15:00 unless am/pm given
+  if (!ap && h <= 7) h += 12;
   return { h24: h, m: mm };
 }
-
-/**
- * Extract upcoming items from free text.
- * Returns [{ title, start_iso, end_iso?, description, source }]
- */
 function extractUpcomingFromText(text) {
   if (!text || typeof text !== "string") return [];
   const out = [];
   const now = new Date();
 
-  // 1) YYYY-MM-DD (optional HH:MM)
   const isoDate = /\b(20\d{2})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?\b/g;
   for (const m of text.matchAll(isoDate)) {
     const y = parseInt(m[1], 10);
@@ -81,7 +68,6 @@ function extractUpcomingFromText(text) {
     }
   }
 
-  // 2) MM/DD(/YYYY)? (optional time)
   const mdSlash = /\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?(?:\s+(?:at\s+)?(\d{1,2}(?::\d{2})?\s*(?:am|pm)?))?/gi;
   for (const m of text.matchAll(mdSlash)) {
     let y = m[3] ? parseInt(m[3], 10) : new Date().getFullYear();
@@ -103,7 +89,6 @@ function extractUpcomingFromText(text) {
     }
   }
 
-  // 3) MonthName Day(th), optional year, optional time
   const monthName =
     /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*(\d{4}))?(?:\s+(?:at\s+)?(\d{1,2}(?::\d{2})?\s*(?:am|pm)?))?\b/gi;
   for (const m of text.matchAll(monthName)) {
@@ -114,7 +99,6 @@ function extractUpcomingFromText(text) {
     const hh = tb?.h24 ?? 10;
     const mm = tb?.m ?? 0;
     const dt = new Date(y, mo - 1, d, hh, mm, 0);
-    // if parsed date already passed this year, bump to next year
     if (!m[3] && dt < now) dt.setFullYear(dt.getFullYear() + 1);
     if (dt > now) {
       out.push({
@@ -127,7 +111,6 @@ function extractUpcomingFromText(text) {
     }
   }
 
-  // De-dupe by start_iso
   const seen = new Set();
   const dedup = [];
   for (const it of out) {
@@ -135,7 +118,7 @@ function extractUpcomingFromText(text) {
     seen.add(it.start_iso);
     dedup.push(it);
   }
-  return dedup.slice(0, 8); // keep it tidy
+  return dedup.slice(0, 8);
 }
 
 /* -------------------------------- component -------------------------------- */
@@ -146,6 +129,7 @@ export default function Dashboard({ user, onLogout }) {
 
   const [meetings, setMeetings] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const [summary, setSummary] = useState({
     status: "empty", // empty | processing | ready | error
@@ -153,13 +137,10 @@ export default function Dashboard({ user, onLogout }) {
     key_points: [],
     decisions: [],
     action_items: [],
-    // if backend already ships schedule suggestions, we'll use them
     schedule_suggestions: [],
   });
 
-  // Upcoming meetings derived in frontend (or from backend suggestions)
   const [upcoming, setUpcoming] = useState([]);
-
   const [transcripts, setTranscripts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -201,6 +182,33 @@ export default function Dashboard({ user, onLogout }) {
     if (!res.ok) throw new Error(`Failed to create meeting: ${res.status}`);
     await fetchMeetings();
   };
+
+  async function handleDelete(meetingId) {
+    const ok = window.confirm("Delete this meeting and its data?");
+    if (!ok) return;
+    setDeletingId(meetingId);
+    try {
+      const res = await fetch(`${API}/api/meetings/${meetingId}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          // remove if you’re not using a dev shim
+          "X-User-Id": user?.id ?? "",
+        },
+      });
+      if (res.status === 204) {
+        setMeetings((prev) => prev.filter((m) => m.id !== meetingId));
+        if (selectedId === meetingId) setSelectedId(null);
+      } else {
+        const msg = await res.text();
+        alert(`Failed to delete (status ${res.status}): ${msg}`);
+      }
+    } catch (e) {
+      alert(`Failed to delete: ${e}`);
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   const fetchTranscripts = async (mid) => {
     try {
@@ -269,7 +277,6 @@ export default function Dashboard({ user, onLogout }) {
       };
       setSummary(nextSummary);
 
-      // Derive upcoming: prefer backend suggestions, else parse frontend
       let upcomingItems = [];
       if (nextSummary.schedule_suggestions.length > 0) {
         upcomingItems = nextSummary.schedule_suggestions.map((it) => ({
@@ -325,10 +332,9 @@ export default function Dashboard({ user, onLogout }) {
       return;
     }
 
-    // poll /summary until ready or error
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     let attempts = 0;
-    const maxAttempts = 30; // ~60s @ 2s
+    const maxAttempts = 30;
 
     while (attempts < maxAttempts) {
       const res = await fetch(`${API}/api/meetings/${mid}/summary?t=${Date.now()}`, {
@@ -348,7 +354,6 @@ export default function Dashboard({ user, onLogout }) {
           };
           setSummary(nextSummary);
 
-          // derive upcoming again
           let upcomingItems = [];
           if (nextSummary.schedule_suggestions.length > 0) {
             upcomingItems = nextSummary.schedule_suggestions.map((it) => ({
@@ -454,7 +459,7 @@ export default function Dashboard({ user, onLogout }) {
     const file = e.target.files?.[0];
     if (!file || !selectedId) return;
     await uploadTranscript(selectedId, file);
-    e.target.value = ""; // allow re-upload same filename
+    e.target.value = "";
   };
 
   return (
@@ -507,15 +512,34 @@ export default function Dashboard({ user, onLogout }) {
                   ].join(" ")}
                   onClick={() => setSelectedId(m.id)}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-800">
-                      {m.title || `Meeting #${m.id}`}
-                    </span>
-                    <span className="text-xs text-gray-500">{m.platform || "—"}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-medium text-gray-800 truncate">
+                        {m.title || `Meeting #${m.id}`}
+                      </div>
+                      <p className="text-xs text-gray-500 truncate">
+                        {m.transcript_path
+                          ? "Transcript uploaded"
+                          : m._hasTranscripts
+                          ? "Transcript uploaded"
+                          : "No transcript yet"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-gray-500">{m.platform || "—"}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(m.id);
+                        }}
+                        disabled={deletingId === m.id}
+                        title="Delete meeting"
+                        className="px-2 py-0.5 text-xs rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                      >
+                        {deletingId === m.id ? "…" : "Delete"}
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 truncate">
-                    {m.transcript_path ? "Transcript uploaded" : (m._hasTranscripts ? "Transcript uploaded" : "No transcript yet")}
-                  </p>
                 </li>
               ))}
             </ul>
@@ -537,14 +561,15 @@ export default function Dashboard({ user, onLogout }) {
               onFilePick={onFilePick}
               onSummarize={() => startSummarize(selected.id)}
               upcoming={upcoming}
+              onDelete={() => handleDelete(selected.id)}
+              deleting={deletingId === selected.id}
             />
           )}
         </main>
 
         {/* RIGHT */}
         <aside className="w-96 border-l bg-white p-4 space-y-4">
-          {/* Calendar panel now receives the pre-filled upcoming items */}
-          <CalendarPanel summary={summary} upcoming={upcoming} />
+        <CalendarPanel userId={userId} summary={summary} upcoming={upcoming} />
           <UserDetails user={user} meetings={meetings} selected={selected} />
           <div className="p-4 rounded-xl border">
             <h3 className="font-semibold text-gray-800 mb-2">How it works</h3>
@@ -638,7 +663,17 @@ function EmptyState({ onAdd }) {
   );
 }
 
-function MeetingPanel({ meeting, summary, transcripts, isUploading, onFilePick, onSummarize, upcoming }) {
+function MeetingPanel({
+  meeting,
+  summary,
+  transcripts,
+  isUploading,
+  onFilePick,
+  onSummarize,
+  upcoming,
+  onDelete,
+  deleting,
+}) {
   const fileRef = useRef(null);
   const status = summary?.status || "empty";
   const hasTranscript = Array.isArray(transcripts) && transcripts.length > 0;
@@ -672,6 +707,14 @@ function MeetingPanel({ meeting, summary, transcripts, isUploading, onFilePick, 
             title={hasTranscript ? "Generate summary" : "Upload a transcript first"}
           >
             {status === "processing" ? "Summarizing..." : "Summarize"}
+          </button>
+          <button
+            className="px-3 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+            onClick={onDelete}
+            disabled={deleting}
+            title="Delete meeting"
+          >
+            {deleting ? "Deleting…" : "Delete"}
           </button>
         </div>
       </div>
@@ -709,50 +752,40 @@ function MeetingPanel({ meeting, summary, transcripts, isUploading, onFilePick, 
         </p>
       </div>
 
-      {/* Q&A Chatbot — placed immediately under the summary */}
+      {/* Q&A */}
       <QaBox meetingId={meeting.id} summaryText={oneLiner} />
 
-            {/* NEW: Upcoming Meetings */}
-            <div className="p-5 bg-white rounded-xl border">
+      {/* Upcoming */}
+      <div className="p-5 bg-white rounded-xl border">
         <h3 className="font-semibold text-purple-700 mb-2">Upcoming Meetings</h3>
         {Array.isArray(upcoming) && upcoming.length > 0 ? (
           <ul className="space-y-2 text-sm">
             {upcoming.map((u, i) => (
               <li key={i} className="border rounded-lg p-3">
-                <div className="font-medium">
-                  {u.title || "Follow-up meeting"}
-                </div>
+                <div className="font-medium">{u.title || "Follow-up meeting"}</div>
                 <div className="text-gray-700">
-                  {u.start_iso
-                    ? new Date(u.start_iso).toLocaleString()
-                    : "—"}
+                  {u.start_iso ? new Date(u.start_iso).toLocaleString() : "—"}
                 </div>
-                {u.description && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    {u.description}
-                  </div>
-                )}
+                {u.description && <div className="text-xs text-gray-500 mt-1">{u.description}</div>}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-gray-600">
-            No upcoming meetings detected yet.
-          </p>
+          <p className="text-sm text-gray-600">No upcoming meetings detected yet.</p>
         )}
         <p className="text-xs text-gray-500 mt-3">
           Tip: Detected dates/times appear here and are pre-filled on the Calendar panel for one-click add.
         </p>
       </div>
 
-
-      {/* Vertical boxes: Key Points & Action Items */}
+      {/* Key Points & Action Items */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card title="Key Points" items={keyPoints} />
         <Card title="Action Items" items={actionItems} />
       </div>
-          {/* Decisions */}
-          <div className="p-5 bg-white rounded-xl border">
+
+      {/* Decisions */}
+      <div className="p-5 bg-white rounded-xl border">
         <h3 className="font-semibold text-purple-700 mb-2">Decisions</h3>
         {status === "processing" && decisions.length === 0 ? (
           <p className="text-sm text-gray-600">Identifying decisions…</p>
@@ -766,7 +799,6 @@ function MeetingPanel({ meeting, summary, transcripts, isUploading, onFilePick, 
           <p className="text-sm text-gray-600">No decisions.</p>
         )}
       </div>
-
     </div>
   );
 }
@@ -776,7 +808,6 @@ function QaBox({ meetingId, summaryText }) {
   const [busy, setBusy] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
   const [history, setHistory] = useState([]); // [{q, a, ctx: []}]
-
   const canUse = !!meetingId;
 
   const indexNow = async () => {
@@ -839,7 +870,14 @@ function QaBox({ meetingId, summaryText }) {
             {summaryText ? summaryText : "No summary text yet."}
           </p>
         </div>
-        
+        <button
+          onClick={indexNow}
+          disabled={busy || !canUse}
+          className="px-2.5 py-1.5 text-xs rounded bg-gray-900 text-white h-8 self-start disabled:opacity-50"
+          title={canUse ? "Build/refresh the vector index for this meeting" : "Select a meeting first"}
+        >
+          {busy ? "Indexing…" : "Reindex"}
+        </button>
       </div>
 
       <div className="flex gap-2">

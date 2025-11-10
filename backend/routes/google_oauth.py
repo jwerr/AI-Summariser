@@ -1,70 +1,76 @@
 # backend/routes/google_oauth.py
-import os, time, httpx, jwt
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import RedirectResponse
+from __future__ import annotations
 
-router = APIRouter(prefix="/api/auth/google", tags=["auth"])
+import os
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Any
+import httpx
+from urllib.parse import urlencode
 
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/api/auth/google/callback")
-JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")
-JWT_AUDIENCE = "ai-summariser"
-FRONTEND_SUCCESS = os.getenv("FRONTEND_SUCCESS_URL", "http://localhost:3000/dashboard")
-FRONTEND_ERROR = os.getenv("FRONTEND_ERROR_URL", "http://localhost:3000/login?error=oauth")
+SCOPES = [
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/calendar.readonly",
+]
 
-TOKEN_URL = "https://oauth2.googleapis.com/token"
-USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+# ---- helpers ----
+def now_utc() -> datetime:
+    return datetime.now(timezone.utc)
 
-@router.get("/callback")
-async def google_callback(code: str):
-    async with httpx.AsyncClient(timeout=20) as client:
-        tok = await client.post(
-            TOKEN_URL,
-            data={
-                "code": code,
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
-                "redirect_uri": GOOGLE_REDIRECT_URI,
-                "grant_type": "authorization_code",
-            },
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-        )
-    if tok.status_code != 200:
-        return RedirectResponse(f"{FRONTEND_ERROR}&stage=token", status_code=302)
+def parse_expiry_from_token_response(data: Dict[str, Any]) -> datetime:
+    expires_in = int(data.get("expires_in", 3600))
+    return now_utc() + timedelta(seconds=max(60, expires_in - 120))
 
-    tokens = tok.json()
-    access_token = tokens.get("access_token")
+def _cfg():
+    """Fetch env at call-time to avoid import-order issues."""
+    client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "")
+    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/api/auth/google/callback")
+    if not client_id:
+        raise RuntimeError("GOOGLE_CLIENT_ID is not set")
+    if not client_secret:
+        raise RuntimeError("GOOGLE_CLIENT_SECRET is not set")
+    return client_id, client_secret, redirect_uri
 
-    async with httpx.AsyncClient(timeout=20) as client:
-        ui = await client.get(USERINFO_URL, headers={"Authorization": f"Bearer {access_token}"})
-    if ui.status_code != 200:
-        return RedirectResponse(f"{FRONTEND_ERROR}&stage=userinfo", status_code=302)
-
-    userinfo = ui.json()
-    # TODO: upsert user + store google tokens in DB if you need Calendar later
-
-    # issue your own session JWT
-    now = int(time.time())
-    claims = {
-        "sub": userinfo["email"],
-        "name": userinfo.get("name"),
-        "picture": userinfo.get("picture"),
-        "aud": JWT_AUDIENCE,
-        "iat": now,
-        "exp": now + 60 * 60 * 8,  # 8 hours
+# ---- OAuth helpers used by google_calendar.py ----
+def build_auth_url(state: str) -> str:
+    client_id, _, redirect_uri = _cfg()
+    params = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "access_type": "offline",
+        "prompt": "consent",
+        "include_granted_scopes": "true",
+        "scope": " ".join(SCOPES),
+        "state": state,
     }
-    app_jwt = jwt.encode(claims, JWT_SECRET, algorithm="HS256")
+    return "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
 
-    resp = RedirectResponse(FRONTEND_SUCCESS, status_code=302)
-    # secure cookie (for localhost keep secure=False)
-    resp.set_cookie(
-        key="session",
-        value=app_jwt,
-        httponly=True,
-        samesite="lax",
-        secure=False,
-        max_age=60 * 60 * 8,
-        path="/",
-    )
-    return resp
+def exchange_code_for_tokens(code: str) -> Dict[str, Any]:
+    client_id, client_secret, redirect_uri = _cfg()
+    data = {
+        "code": code,
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "redirect_uri": redirect_uri,
+        "grant_type": "authorization_code",
+    }
+    with httpx.Client(timeout=20) as client:
+        r = client.post("https://oauth2.googleapis.com/token", data=data)
+    if r.status_code != 200:
+        raise RuntimeError(f"Token exchange failed: {r.text}")
+    return r.json()
+
+def refresh_access_token(refresh_token: str) -> Dict[str, Any]:
+    client_id, client_secret, _ = _cfg()
+    data = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+    }
+    with httpx.Client(timeout=20) as client:
+        r = client.post("https://oauth2.googleapis.com/token", data=data)
+    if r.status_code != 200:
+        raise RuntimeError(f"Token refresh failed: {r.text}")
+    return r.json()

@@ -1,0 +1,33 @@
+Quarterly Board Update — Transcript (abridged)
+Date: 2025-11-10
+Attendees: @ceo, @cfo, @pm_arul, @lead_shiva, @data_alex
+
+Opening:
+- Overview of Q3 goals, risks, and hiring plan.
+
+Status:
+- Revenue tracking slightly above plan; support tickets down 12%.
+- Upload → Summarize → Store flow works; parsing for PDF/DOCX pending final tests.
+- Pilot users want CSV/Markdown export of Key Points, Decisions, Action Items.
+
+Discussion:
+- We will prioritize export endpoints and a visible History panel for demos.
+- Agreed to keep temperature low for consistency; retries will stay at 3.
+- Concern: transcripts over 2 hours—consider chunking with overlap and warning banners.
+
+Notes:
+- @data_alex shared that VTT from Zoom is the most common format.
+- Let's assign explicit owners to action items with due dates.
+
+Decisions:
+- Decided to cap uploads at 50 MB and show a warning on large files.
+- We will expose GET /api/summaries/{id}/export.csv and /export.md.
+
+Action Items:
+- @lead_shiva implement CSV + Markdown export endpoints — due 2025-11-10 at 04:15 pm
+- @pm_arul add History list UI with version picker — due 2025-11-11
+- @data_alex validate PDF/DOCX parsing on 5 real samples — deadline 2025-11-21
+- Follow up with pilot users about chunking needs — by 2025-11-22
+
+Closing:
+- Next review on 2025-11-23; send notes to all attendees.

@@ -25,10 +25,11 @@ from pydantic import BaseModel, EmailStr
 # If you have meeting routes, keep them
 from .routes.meetings import router as meetings_router
 from .routes import google_calendar
+#from .routes import google_oauth
 
 
 
-load_dotenv(dotenv_path="./backend/.env")
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 load_dotenv()
 
 # --- DB / Models / Schemas / Services ---
@@ -63,8 +64,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(google_calendar.router)
-app.include_router(google_oauth.router)
+#app.include_router(meetings.router, prefix="/api")         # you already have this
+app.include_router(google_calendar.router, prefix="/api")  # 👈 add this
+
 app.include_router(qa_routes.router)
 app.include_router(qa_router, prefix="/api")
 # Create tables (dev). In prod, use Alembic.

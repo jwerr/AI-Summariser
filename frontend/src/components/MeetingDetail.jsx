@@ -1,8 +1,10 @@
+// components/MeetingDetail.jsx
 import { useParams, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import UploadAndSummarize from "../UploadAndSummarize";
 
-// Keep a single source of truth for meetings (ids + meta)
+
+// Demo list (remove when wiring real data)
 export const MEETINGS = [
   { id: "kickoff-2024-04-20", title: "Project Kickoff", date: "Apr 20" },
   { id: "team-sync-2024-04-18", title: "Team Sync", date: "Apr 18" },
@@ -14,8 +16,41 @@ export default function MeetingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [mode, setMode] = useState(null); // "upload" | "summarize" | null
+  const [deleting, setDeleting] = useState(false);
 
-  const meeting = useMemo(() => MEETINGS.find(m => m.id === id), [id]);
+  const meeting = useMemo(() => MEETINGS.find((m) => String(m.id) === String(id)), [id]);
+
+  async function handleDelete() {
+    const ok = window.confirm("Delete this meeting and its related data?");
+    if (!ok) return;
+
+    // If your real backend uses numeric IDs, try to delete when id is numeric.
+    const isNumeric = /^\d+$/.test(String(id));
+
+    if (!isNumeric) {
+      // Demo mode (string ids from MEETINGS): just navigate back.
+      navigate("/dashboard", { replace: true });
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      const res = await fetch(`/api/meetings/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.status === 204) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        const txt = await res.text();
+        alert(`Failed to delete (status ${res.status}): ${txt}`);
+      }
+    } catch (e) {
+      alert(`Failed to delete: ${e}`);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (!meeting) {
     return (
@@ -43,7 +78,18 @@ export default function MeetingDetail() {
           </button>
           <h1 className="text-2xl font-bold text-purple-700">{meeting.title}</h1>
         </div>
-        <span className="text-gray-600">{meeting.date}</span>
+
+        <div className="flex items-center gap-3">
+          <span className="text-gray-600">{meeting.date}</span>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            title="Delete meeting"
+            className="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition"
+          >
+            {deleting ? "Deleting…" : "Delete"}
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 p-6 space-y-6">
@@ -68,21 +114,21 @@ export default function MeetingDetail() {
         </div>
 
         {/* Panel */}
-         <div className="p-6 bg-white rounded-xl shadow">
-           {!mode && (
-             <p className="text-gray-600">
-               Choose <b>Upload Transcript</b> or <b>Summarize</b> to begin.
-             </p>
-           )}
+        <div className="p-6 bg-white rounded-xl shadow">
+          {!mode && (
+            <p className="text-gray-600">
+              Choose <b>Upload Transcript</b> or <b>Summarize</b> to begin.
+            </p>
+          )}
 
-           {mode && (
-             <UploadAndSummarize
-               key={`${id}-${mode}`}     // force remount when switching modes
-               meetingId={id}            // let your backend know which meeting this belongs to
-               mode={mode}               // optional: if your component supports a mode
-             />
-           )}
-         </div>
+          {mode && (
+            <UploadAndSummarize
+              key={`${id}-${mode}`}   // force remount when switching modes
+              meetingId={id}          // backend meeting identifier
+              mode={mode}             // optional prop if your component supports it
+            />
+          )}
+        </div>
       </main>
     </div>
   );
