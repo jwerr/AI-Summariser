@@ -3,36 +3,27 @@
   "title": "Team Meeting",
   "user_id": 5,
   "platform": "Zoom",
-  "transcript_path": "/Users/shivayokeshwari/AI_Summariser/uploads/meeting_75_20251110T212206Z_Team_Meeting_Transcript.txt",
-  "generated_at": "2025-11-10T21:22:08.158246Z",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser/uploads/meeting_75_20251113T225206Z_meeting_45_20251030T225616Z_Development_Sprint_Transcript.txt",
+  "generated_at": "2025-11-13T22:52:08.493564Z",
   "status": "ready",
-  "summary_text": "AI Summariser Sprint Planning Meeting Transcript ---------------------------------------------------- Date: November 9, 2025 Platform: Zoom Project: AI Meeting Summariser – Sprint 3 Review Participants: - Aisha (Team…",
+  "summary_text": "Meeting Transcripts Participants: - Arul (Scrum Master) - Alex (Frontend Developer) - Shiva (Backend Developer) - Robert (QA Engineer) - Steve (UI/UX Designer) Arul: Alright team, let’s start today’s sprint review.",
   "key_points": [
-    "Backend summarization module is almost complete.",
-    "Integration and next-week deadlines discussed.",
-    "QA to handle error cases for summarizer endpoint.",
-    "Internal demo scheduled for November 10th at 9:00 PM.",
-    "Code-freeze after the demo.",
-    "Sprint 4 will focus on question-answer generation and cluster summaries.",
-    "Planning meeting on November 12th at 6:00 PM.",
-    "Progress review report due before the end of next week.",
-    "Review meeting on November 13th at 8:10 PM."
+    "Backend refactor completed",
+    "New caching layer reduces API response time by 40%",
+    "Landing page layout updated and accessibility improved",
+    "Need to test with screen readers",
+    "Next week's deployment requires early login",
+    "Next team retrospective scheduled for November 18th"
   ],
   "decisions": [
-    "Finalize demo before November 10th at 9:00 PM.",
-    "Code-freeze after the November 10th demo.",
-    "Prepare for planning meeting on November 12th."
+    "Finalize early login for next week's deployment at 9:10 AM",
+    "Schedule next team retrospective for November 18th at 4 PM"
   ],
   "action_items": [
-    "Nina to write regression cases by tomorrow.",
-    "Arul to finish calendar connection UI and fix 400 error tonight.",
-    "Sam to redeploy containerized build on test server tomorrow afternoon.",
-    "Everyone to prepare ideas for embeddings by November 12th.",
-    "Shiva to prepare backend metrics for review meeting.",
-    "Arul to include frontend screenshots and workflow demo.",
-    "Nina to handle test coverage section.",
-    "Sam to generate performance stats from Docker logs.",
-    "Everyone to update tasks in Jira before the end of the day."
+    "Alex to test new frontend build after Shiva pushes changes",
+    "Robert to test landing page with screen readers",
+    "Everyone to log in 20 minutes earlier for deployment",
+    "Alex to bring GitHub issue summary and PR metrics to retrospective"
   ],
-  "completed_at": "2025-11-10T21:22:15.079508Z"
+  "completed_at": "2025-11-13T22:52:13.444999Z"
 }

@@ -51,6 +51,12 @@ export default function MeetingPage() {
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
   const [transcriptError, setTranscriptError] = useState("");
 
+  // --------- Q/A bot state ----------
+  const [qaQuestion, setQaQuestion] = useState("");
+  const [qaAnswer, setQaAnswer] = useState("");
+  const [qaError, setQaError] = useState("");
+  const [isQaLoading, setIsQaLoading] = useState(false);
+
   // --------- derive transcript info ----------
   const transcriptPath =
     meeting?.transcript_download_url ||
@@ -260,6 +266,9 @@ export default function MeetingPage() {
       );
       setSummary(emptySummary);
       setTranscriptText("");
+      setQaAnswer("");
+      setQaQuestion("");
+      setQaError("");
     }
   }
 
@@ -297,6 +306,46 @@ export default function MeetingPage() {
       );
     } finally {
       setIsLoadingTranscript(false);
+    }
+  }
+
+  // --------- Q/A bot: call backend /api/qa ----------
+  async function handleAskQuestion() {
+    if (!qaQuestion.trim()) return;
+
+    if (!hasTranscript) {
+      setQaError("Please upload a transcript first.");
+      return;
+    }
+
+    setIsQaLoading(true);
+    setQaError("");
+    setQaAnswer("");
+
+    try {
+      const res = await fetch(`${API}/api/qa`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          meeting_id: Number(id),
+          question: qaQuestion.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Failed to get answer from Q/A bot");
+      }
+
+      setQaAnswer(data.answer || "");
+    } catch (err) {
+      console.error(err);
+      setQaError(err.message || "Something went wrong while asking the bot.");
+    } finally {
+      setIsQaLoading(false);
     }
   }
 
@@ -425,6 +474,7 @@ export default function MeetingPage() {
           </div>
         </div>
 
+        {/* Summary card */}
         {summary.summary_text ? (
           <div className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
             <h3 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
@@ -444,6 +494,60 @@ export default function MeetingPage() {
             </p>
           </div>
         )}
+
+        {/* Q&A Bot card */}
+        <div className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+          <h3 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
+            Ask about this meeting
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Type a question about the uploaded transcript. The bot will answer
+            using only this meeting&apos;s content.
+          </p>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              type="text"
+              className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500/70"
+              placeholder={
+                hasTranscript
+                  ? "e.g., What did we decide about next week's deployment?"
+                  : "Upload a transcript first to enable Q&A"
+              }
+              value={qaQuestion}
+              onChange={(e) => setQaQuestion(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isQaLoading) {
+                  handleAskQuestion();
+                }
+              }}
+              disabled={!hasTranscript || isQaLoading}
+            />
+            <button
+              type="button"
+              onClick={handleAskQuestion}
+              disabled={!hasTranscript || isQaLoading}
+              className="mt-1 sm:mt-0 px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isQaLoading ? "Thinking…" : "Ask"}
+            </button>
+          </div>
+
+          {qaError && (
+            <p className="mt-2 text-xs text-rose-600 dark:text-rose-300">
+              {qaError}
+            </p>
+          )}
+
+          {qaAnswer && (
+            <div className="mt-4 rounded-lg bg-purple-50/80 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-800 px-3 py-3 text-sm text-slate-800 dark:text-slate-100">
+              <p className="mb-1 text-xs uppercase tracking-wide text-purple-700 dark:text-purple-300">
+                Answer
+              </p>
+              <p className="whitespace-pre-wrap">{qaAnswer}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Transcript Modal */}

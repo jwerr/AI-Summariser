@@ -267,19 +267,19 @@ def get_transcript(
     if not p.exists():
         raise HTTPException(404, "Transcript file not found")
 
-    # If you want the original file (for download)
+    # If you ever want raw file download (e.g. for PDFs), use ?raw=true
     if raw:
-        return FileResponse(p, filename=p.name)
+        return FileResponse(
+            p,
+            filename=p.name,
+        )
 
-    # Default: return best-effort text
+    # Default: return best-effort text (for modal + in-app view)
     text = _load_transcript_text(str(p))
-
-    # Even if text extraction fails, return a friendly message instead of 500
     if not (text or "").strip():
-        text = (
-            "Transcript file exists but could not be read as plain text.\n\n"
-            "It might be an image-only PDF or an unsupported format.\n"
-            "Try using the Download button to open it directly."
+        raise HTTPException(
+            500,
+            "Transcript exists but could not be read as text (possibly image-only PDF or unsupported format).",
         )
 
     return Response(

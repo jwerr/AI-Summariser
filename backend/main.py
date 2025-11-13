@@ -15,6 +15,8 @@ from jose import jwt, JWTError
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
+from .routes import qa_bot
+
 
 # --- load envs early ---
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
@@ -87,7 +89,7 @@ app.include_router(auth_router)       # /api/auth/google/...
 app.include_router(calendar_router)   # /api/calendar/...
 app.include_router(drive_router)      # /api/google/drive/...
 app.include_router(google_status.router)
-
+app.include_router(qa_bot.router)
 app.include_router(google_drive.router)
 # Create tables (dev). In prod, use Alembic.
 Base.metadata.create_all(bind=engine)
