@@ -31,7 +31,7 @@ def _cfg():
         raise RuntimeError("GOOGLE_CLIENT_SECRET is not set")
     return client_id, client_secret, redirect_uri
 
-# ---- OAuth helpers used by google_calendar.py ----
+
 def build_auth_url(state: str) -> str:
     client_id, _, redirect_uri = _cfg()
     params = {

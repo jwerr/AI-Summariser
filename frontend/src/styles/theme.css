@@ -1,0 +1,510 @@
+/* ========== Base theme tokens ========== */
+
+:root {
+  --bg-app: #f3f4f6;          /* overall background */
+  --bg-sidebar: #ffffff;
+  --bg-topbar: rgba(255, 255, 255, 0.9);
+  --bg-card: rgba(255, 255, 255, 0.97);
+  --bg-soft: #f9fafb;
+
+  --border-subtle: rgba(148, 163, 184, 0.45);
+
+  --text-main: #0f172a;
+  --text-soft: #4b5563;
+  --text-muted: #6b7280;
+
+  --accent: #7c3aed;         /* purple */
+  --accent-strong: #4f46e5;
+}
+
+/* Dark mode overrides (triggered by html.dark from your toggle) */
+html.dark {
+  --bg-app: #020617;
+  --bg-sidebar: rgba(15, 23, 42, 0.98);
+  --bg-topbar: rgba(15, 23, 42, 0.96);
+  --bg-card: rgba(15, 23, 42, 0.98);
+  --bg-soft: #020617;
+
+  --border-subtle: #1f2937;
+
+  --text-main: #e5e7eb;
+  --text-soft: #e5e7eb;
+  --text-muted: #9ca3af;
+
+  --accent: #a855f7;
+  --accent-strong: #6366f1;
+}
+
+/* ========== Global background / typography ========== */
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    sans-serif;
+  background:
+    radial-gradient(circle at top, #e0f2fe 0, transparent 60%),
+    var(--bg-app);
+  color: var(--text-main);
+}
+
+html.dark body {
+  background:
+    radial-gradient(circle at top, #020617 0, transparent 55%),
+    var(--bg-app);
+}
+
+/* ========== App shell layout (used by AppShell.jsx) ========== */
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+}
+
+/* Sidebar area */
+.app-sidebar {
+  width: 16rem;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px);
+}
+
+.app-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.app-sidebar-logo {
+  height: 2.25rem;
+  width: 2.25rem;
+  border-radius: 0.9rem;
+  background: linear-gradient(to bottom right, #8b5cf6, #ec4899);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.45);
+}
+
+.app-sidebar-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+/* Sidebar nav container coming from Sidebar.jsx */
+.sidebar-inner {
+  padding: 0.75rem;
+}
+
+/* Sidebar links */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 0.25rem;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+.sidebar-link:hover {
+  background: rgba(148, 163, 184, 0.14);
+  color: var(--text-main);
+}
+
+.sidebar-link--active {
+  background: #020617;
+  color: #f9fafb;
+}
+
+/* Main area */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top bar */
+.app-topbar {
+  height: 3.5rem;
+  padding: 0 1rem;
+  background: var(--bg-topbar);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  backdrop-filter: blur(12px);
+}
+
+/* Theme toggle button */
+.topbar-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  font-size: 0.75rem;
+  color: var(--text-main);
+  background: var(--bg-soft);
+  cursor: pointer;
+}
+
+.topbar-toggle:hover {
+  background: rgba(148, 163, 184, 0.14);
+}
+
+/* Profile button in top bar */
+.topbar-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.8rem;
+  cursor: pointer;
+}
+
+.topbar-profile:hover {
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.topbar-avatar {
+  height: 2rem;
+  width: 2rem;
+  border-radius: 999px;
+  background: linear-gradient(to bottom right, #8b5cf6, #ec4899);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topbar-name {
+  max-width: 15rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+/* Main page padding */
+.page {
+  padding: 1.5rem 1.5rem 2.5rem;
+}
+
+@media (min-width: 1024px) {
+  .page {
+    padding: 2rem 2rem 3rem;
+  }
+}
+
+/* ========== Generic card + button helpers (used across pages) ========== */
+
+.card-surface {
+  border-radius: 1rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+/* Buttons */
+.btn-primary {
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.95rem;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(to right, var(--accent), var(--accent-strong));
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(76, 81, 191, 0.4);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-outline {
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.btn-outline:hover {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+/* Small badges */
+.badge-success {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.badge-muted {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text-muted);
+}
+
+/* ========== Dark-mode overrides for common Tailwind utility classes ========== */
+
+/* Neutral backgrounds → dark surfaces */
+html.dark .bg-white,
+html.dark .bg-white\/95,
+html.dark .bg-gray-50,
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 {
+  background-color: var(--bg-card) !important;
+}
+
+/* Sidebar-like light backgrounds */
+html.dark .bg-white\/90 {
+  background-color: var(--bg-sidebar) !important;
+}
+
+/* Generic text shades → readable in dark */
+html.dark .text-gray-900,
+html.dark .text-slate-900,
+html.dark .text-gray-800,
+html.dark .text-slate-800 {
+  color: var(--text-main) !important;
+}
+
+html.dark .text-gray-700,
+html.dark .text-slate-700,
+html.dark .text-gray-600,
+html.dark .text-slate-600,
+html.dark .text-gray-500,
+html.dark .text-slate-500 {
+  color: var(--text-muted) !important;
+}
+
+/* Borders */
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-gray-100,
+html.dark .border-gray-200 {
+  border-color: var(--border-subtle) !important;
+}
+
+/* Subtle helper text (tooltips, tips, etc.) */
+html.dark .text-slate-400 {
+  color: var(--text-muted) !important;
+}
+
+/* === Uploads – iOS-style swipe rows ================================== */
+
+.upload-row {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+html.dark .upload-row {
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.upload-row-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  transform: translateX(0);
+  transition: transform 0.18s ease-out;
+  z-index: 1;
+}
+
+.upload-row-actions {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.upload-row-delete-btn {
+  pointer-events: auto;
+  padding: 0 1.4rem;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #fff;
+  background: #ef4444;
+  border-radius: 0 0.9rem 0.9rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-row-delete-btn:disabled {
+  opacity: 0.7;
+}
+
+.upload-row--swiped .upload-row-inner {
+  transform: translateX(-96px); /* reveal delete area, but keep row rounded */
+}
+
+/* content bits */
+
+.upload-row-icon {
+  flex: 0 0 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e5e7eb, #f3f4f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+html.dark .upload-row-icon {
+  background: linear-gradient(135deg, #1e293b, #020617);
+}
+
+.upload-row-main {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.upload-row-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html.dark .upload-row-title {
+  color: #e5e7eb;
+}
+
+.upload-row-meta {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+html.dark .upload-row-meta {
+  color: #9ca3af;
+}
+
+.upload-row-file {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: #4b5563;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+html.dark .upload-row-file {
+  color: #cbd5f5;
+}
+
+.upload-row-file:hover {
+  opacity: 0.9;
+}
+
+.upload-row-dot {
+  opacity: 0.6;
+}
+
+.upload-row-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}
+
+.upload-row-kind {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+html.dark .upload-row-kind {
+  color: #6b7280;
+}
+
+.upload-row-download {
+  border: none;
+  background: transparent;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.1rem;
+  color: #4b5563;
+}
+
+html.dark .upload-row-download {
+  color: #e5e7eb;
+}
+
+.upload-row-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  white-space: nowrap;
+}
+
+html.dark .upload-row-badge {
+  background: rgba(22, 163, 74, 0.12);
+  color: #bbf7d0;
+}

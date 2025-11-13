@@ -4,11 +4,6 @@ from __future__ import annotations
 import os
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
-from .routes import google_oauth
-from .routes import qa as qa_routes
-from .routes.qa import router as qa_router
-
-
 
 import bcrypt
 from dotenv import load_dotenv
@@ -21,14 +16,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 
-
-# If you have meeting routes, keep them
-from .routes.meetings import router as meetings_router
-from .routes import google_calendar
-#from .routes import google_oauth
-
-
-
+# --- load envs early ---
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 load_dotenv()
 
@@ -38,6 +26,25 @@ from .models import User, LoginEvent, Meeting, Transcript, Summary
 
 from .schemas import UserMeOut, TranscriptOut, SummaryOut, SummaryCreate
 from .services.summarize import summarize_text, summarize_text_dict_ui
+
+# --- Routers / modules ---
+from .routes.meetings import router as meetings_router
+
+from .routes import qa as qa_routes
+from .routes.qa import router as qa_router
+
+# Google helper module (used by other routes)
+from .routes import google_oauth
+from .routes import google_drive
+
+# If your google_calendar.py was refactored to expose multiple routers:
+#   google_router  -> /api/google/... (auth-url, status)
+#   auth_router    -> /api/auth/google/callback
+#   calendar_router -> /api/calendar/events, /api/calendar/create
+from .routes.google_calendar import google_router, auth_router, calendar_router
+
+# Drive webhook router
+from .routes.google_drive_webhook import router as drive_router
 
 # ========= Config =========
 JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret_change_me")
@@ -53,10 +60,14 @@ CORS_ORIGINS = [
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "./uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+from .routes import google_status
+
+
 
 # ========= App =========
 app = FastAPI(title="AI Summariser API", version="0.3.4")
-app.include_router(meetings_router, prefix="/api")
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -64,13 +75,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-#app.include_router(meetings.router, prefix="/api")         # you already have this
-app.include_router(google_calendar.router, prefix="/api")  # 👈 add this
 
+# Routers
+app.include_router(meetings_router, prefix="/api")
 app.include_router(qa_routes.router)
 app.include_router(qa_router, prefix="/api")
+
+# Google / Calendar / Drive
+app.include_router(google_router)     # /api/google/...
+app.include_router(auth_router)       # /api/auth/google/...
+app.include_router(calendar_router)   # /api/calendar/...
+app.include_router(drive_router)      # /api/google/drive/...
+app.include_router(google_status.router)
+
+app.include_router(google_drive.router)
 # Create tables (dev). In prod, use Alembic.
 Base.metadata.create_all(bind=engine)
+
 
 # ========= small idempotent DDLs =========
 def ensure_profile_columns():
@@ -138,6 +159,7 @@ def _strip_nuls(obj):
 def make_jwt(payload: Dict[str, Any]) -> str:
     exp = datetime.utcnow() + timedelta(minutes=JWT_EXPIRE_MINUTES)
     return jwt.encode({**payload, "exp": exp}, JWT_SECRET, algorithm=ALGO)
+
 
 def decode_cookie(req: Request) -> Dict[str, Any]:
     token = req.cookies.get("session")
