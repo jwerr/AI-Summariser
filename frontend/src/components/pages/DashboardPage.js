@@ -5,6 +5,7 @@ import CalendarPanel from "../CalendarPanel";
 
 const API = process.env.REACT_APP_API_URL || "";
 const AFTER_GOOGLE_KEY = "after_google_auth_destination";
+const NOTES_KEY_PREFIX = "dashboard_notes_";
 
 /* ------------ date extraction helpers ------------ */
 const MONTHS = {
@@ -171,6 +172,7 @@ export default function DashboardPage({ user }) {
   const [loading, setLoading] = useState(false);
   const [upcoming, setUpcoming] = useState([]);
   const [loadingUpcoming, setLoadingUpcoming] = useState(false);
+  const [notes, setNotes] = useState("");
   const calRef = useRef(null);
 
   async function fetchMeetings() {
@@ -231,25 +233,49 @@ export default function DashboardPage({ user }) {
     }
   }
 
+  // Load meetings
   useEffect(() => {
     fetchMeetings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
+  // Refresh upcoming when meetings change
   useEffect(() => {
     fetchUpcomingFromLatest();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(meetings)]);
 
+  // Handle redirect after Google auth
   useEffect(() => {
     const dest = localStorage.getItem(AFTER_GOOGLE_KEY);
     if (dest) {
       localStorage.removeItem(AFTER_GOOGLE_KEY);
       if (dest === "uploads") {
-        navigate("/uploads"); // ⬅️ adjust if your route is different
+        navigate("/uploads");
       }
     }
   }, [navigate]);
+
+  // Load notes from localStorage when userId changes
+  useEffect(() => {
+    const key = `${NOTES_KEY_PREFIX}${userId}`;
+    const stored = localStorage.getItem(key);
+    if (stored != null) {
+      setNotes(stored);
+    } else {
+      setNotes("");
+    }
+  }, [userId]);
+
+  // Persist notes to localStorage
+  useEffect(() => {
+    const key = `${NOTES_KEY_PREFIX}${userId}`;
+    if (notes && notes.trim().length > 0) {
+      localStorage.setItem(key, notes);
+    } else {
+      localStorage.removeItem(key);
+    }
+  }, [notes, userId]);
 
   const recent3 = useMemo(
     () => (meetings || []).slice(0, 3),
@@ -333,7 +359,14 @@ export default function DashboardPage({ user }) {
                 upcoming.map((u, i) => (
                   <button
                     key={i}
-                    onClick={() => calRef.current?.prefill(u)}
+                    onClick={() => {
+                      // Prefill the calendar composer
+                      calRef.current?.prefill(u);
+                      // Remove this item from upcoming once it's used
+                      setUpcoming((prev) =>
+                        prev.filter((_, idx) => idx !== i)
+                      );
+                    }}
                     className="text-left border border-slate-200 dark:border-slate-700 rounded-lg p-3 bg-white/80 dark:bg-slate-800 hover:shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500"
                     title="Click to prefill the Event Composer"
                   >
@@ -363,6 +396,26 @@ export default function DashboardPage({ user }) {
               )}
             </div>
           </section>
+
+          {/* Notes card */}
+          <section className="rounded-xl border bg-white/95 shadow-sm dark:bg-slate-900 dark:border-slate-700">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-semibold text-gray-800 dark:text-slate-100">
+                Notes
+              </h3>
+              <span className="text-[11px] text-gray-400 dark:text-slate-500">
+                Auto-saved
+              </span>
+            </div>
+            <div className="p-4">
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Jot down quick ideas, next steps, or reminders…"
+                className="w-full min-h-[120px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900 px-3 py-2 text-sm text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-500 resize-y"
+              />
+            </div>
+          </section>
         </div>
 
         {/* Right column – Calendar + composer */}
@@ -372,5 +425,4 @@ export default function DashboardPage({ user }) {
       </div>
     </div>
   );
-
 }

@@ -1,7 +1,9 @@
+# 
 # backend/routes/meetings.py
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, BackgroundTasks, Response
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from pathlib import Path
 from datetime import datetime
@@ -190,6 +192,19 @@ def create_meeting(meeting: MeetingCreate, db: Session = Depends(get_db)):
     db.add(m); db.commit(); db.refresh(m)
     return m
 
+@router.get("/{meeting_id}")
+def get_meeting(meeting_id: int, db: Session = Depends(get_db)):
+    meeting = (
+        db.query(Meeting)
+        .filter(Meeting.id == meeting_id)
+        .first()
+    )
+
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    return meeting
+
 @router.get("/user/{user_id}", response_model=list[MeetingOut])
 def get_meetings_for_user(user_id: int, db: Session = Depends(get_db)):
     return db.query(Meeting).filter(Meeting.user_id == user_id).all()
@@ -232,6 +247,45 @@ def list_transcripts(meeting_id: int, db: Session = Depends(get_db)):
         raise HTTPException(404, "Meeting not found")
     idx = _read_json(_transcripts_index_path(meeting_id)) or {"meeting_id": meeting_id, "files": []}
     return idx
+
+# ---------- NEW: Get transcript (text view / download) ----------
+@router.get("/{meeting_id}/transcript")
+def get_transcript(
+    meeting_id: int,
+    raw: bool = False,  # ?raw=true → download original file; default → text view
+    db: Session = Depends(get_db),
+):
+    m = db.get(Meeting, meeting_id)
+    if not m:
+        raise HTTPException(404, "Meeting not found")
+
+    if not m.transcript_path:
+        raise HTTPException(404, "No transcript for this meeting")
+
+    p = Path(m.transcript_path)
+
+    if not p.exists():
+        raise HTTPException(404, "Transcript file not found")
+
+    # If you want the original file (for download)
+    if raw:
+        return FileResponse(p, filename=p.name)
+
+    # Default: return best-effort text
+    text = _load_transcript_text(str(p))
+
+    # Even if text extraction fails, return a friendly message instead of 500
+    if not (text or "").strip():
+        text = (
+            "Transcript file exists but could not be read as plain text.\n\n"
+            "It might be an image-only PDF or an unsupported format.\n"
+            "Try using the Download button to open it directly."
+        )
+
+    return Response(
+        content=text,
+        media_type="text/plain; charset=utf-8",
+    )
 
 @router.post("/{meeting_id}/summarize")
 def summarize_meeting(
@@ -371,7 +425,46 @@ def get_summary(meeting_id: int, db: Session = Depends(get_db)):
         "normalized": _normalize_summary_payload(data),
     }
 
-# ---------- DELETE ----------
+# ---------- DELETE transcript only ----------
+@router.delete("/{meeting_id}/transcript", status_code=204)
+def delete_transcript(
+    meeting_id: int,
+    db: Session = Depends(get_db),
+):
+    m = db.get(Meeting, meeting_id)
+    if not m:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    # remove files from transcripts index
+    try:
+        idx_path = _transcripts_index_path(meeting_id)
+        idx = _read_json(idx_path) or {}
+        for f in (idx.get("files") or []):
+            fpath = f.get("path")
+            if fpath and os.path.exists(fpath):
+                try:
+                    os.remove(fpath)
+                except Exception:
+                    pass
+        if idx_path.exists():
+            idx_path.unlink(missing_ok=True)
+    except Exception:
+        pass
+
+    # remove Meeting.transcript_path (latest convenience path) if still present
+    try:
+        if m.transcript_path and os.path.exists(m.transcript_path):
+            os.remove(m.transcript_path)
+    except Exception:
+        pass
+
+    # clear reference on Meeting
+    m.transcript_path = None
+    db.add(m)
+    db.commit()
+    return Response(status_code=204)
+
+# ---------- DELETE meeting ----------
 @router.delete("/{meeting_id}", status_code=204)
 def delete_meeting(
     meeting_id: int,

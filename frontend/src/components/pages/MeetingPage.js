@@ -1,7 +1,7 @@
 // src/pages/MeetingPage.js
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Download, Trash2 } from "lucide-react";
+import { Download, Trash2, FileText, X } from "lucide-react";
 
 const API = process.env.REACT_APP_API_URL || "";
 
@@ -44,6 +44,12 @@ export default function MeetingPage() {
 
   // local transcript info so UI updates immediately after upload
   const [localTranscript, setLocalTranscript] = useState(null); // {name, uploadedAt}
+
+  // --------- transcript modal state ----------
+  const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+  const [transcriptText, setTranscriptText] = useState("");
+  const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
+  const [transcriptError, setTranscriptError] = useState("");
 
   // --------- derive transcript info ----------
   const transcriptPath =
@@ -208,17 +214,14 @@ export default function MeetingPage() {
   }
 
   function handleDownloadTranscript() {
+    // If it's a remote URL (Google Drive, etc.), open directly
     if (transcriptPath && /^https?:\/\//i.test(transcriptPath)) {
       window.open(transcriptPath, "_blank");
       return;
     }
-    if (transcriptPath) {
-      const url = `${API}/api/files/${encodeURIComponent(transcriptPath)}`;
-      window.open(url, "_blank");
-      return;
-    }
-    // fallback generic endpoint
-    const url = `${API}/api/meetings/${id}/transcript`;
+
+    // Local uploads → download the original file
+    const url = `${API}/api/meetings/${id}/transcript?raw=true`;
     window.open(url, "_blank");
   }
 
@@ -256,6 +259,44 @@ export default function MeetingPage() {
           : m
       );
       setSummary(emptySummary);
+      setTranscriptText("");
+    }
+  }
+
+  // --------- fetch transcript text for modal ----------
+  async function openTranscriptModal() {
+    if (!hasTranscript) return;
+    setShowTranscriptModal(true);
+    setTranscriptError("");
+
+    // if already loaded once, don't refetch
+    if (transcriptText) return;
+
+    setIsLoadingTranscript(true);
+    try {
+      let url;
+      if (transcriptPath && /^https?:\/\//i.test(transcriptPath)) {
+        // direct HTTP(S) URL, e.g., Google Drive link
+        url = transcriptPath;
+      } else {
+        // for local uploads, backend returns plain text
+        url = `${API}/api/meetings/${id}/transcript`;
+      }
+
+      const r = await fetch(url, { credentials: "include" });
+      if (!r.ok) {
+        const t = await r.text();
+        throw new Error(`Failed to load transcript: ${r.status} ${t}`);
+      }
+      const text = await r.text();
+      setTranscriptText(text || "");
+    } catch (err) {
+      console.error(err);
+      setTranscriptError(
+        "Unable to load transcript text. You may still download it instead."
+      );
+    } finally {
+      setIsLoadingTranscript(false);
     }
   }
 
@@ -329,13 +370,22 @@ export default function MeetingPage() {
               <div className="flex items-center gap-2">
                 <div className="text-xs text-slate-500 dark:text-slate-400 mr-1">
                   Manual upload ·{" "}
-                  {formatDateTime(transcriptMeta.uploadedAt) ||
-                    "just now"}
+                  {formatDateTime(transcriptMeta.uploadedAt) || "just now"}
                 </div>
 
                 <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 px-2 py-0.5 text-[11px]">
                   Uploaded
                 </span>
+
+                <button
+                  type="button"
+                  onClick={openTranscriptModal}
+                  className="px-2 py-1 text-[11px] inline-flex items-center gap-1 rounded-full border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  title="View transcript"
+                >
+                  <FileText size={12} />
+                  View transcript
+                </button>
 
                 <button
                   type="button"
@@ -395,6 +445,56 @@ export default function MeetingPage() {
           </div>
         )}
       </div>
+
+      {/* Transcript Modal */}
+      {showTranscriptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-3xl w-full mx-4 max-h-[80vh] flex flex-col border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                  Transcript &bull; {transcriptMeta.name}
+                </h2>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {formatDateTime(transcriptMeta.uploadedAt) || "Uploaded"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTranscriptModal(false)}
+                className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-300"
+                aria-label="Close transcript"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-4 overflow-auto text-xs sm:text-sm font-mono whitespace-pre-wrap text-slate-800 dark:text-slate-100 bg-slate-50/80 dark:bg-slate-950/60">
+              {isLoadingTranscript ? (
+                <p>Loading transcript…</p>
+              ) : transcriptError ? (
+                <p className="text-rose-600 dark:text-rose-300">
+                  {transcriptError}
+                </p>
+              ) : transcriptText ? (
+                transcriptText
+              ) : (
+                <p>No transcript text available.</p>
+              )}
+            </div>
+
+            <div className="flex justify-end px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setShowTranscriptModal(false)}
+                className="px-3 py-1.5 text-xs rounded-lg bg-slate-900 text-white hover:bg-slate-800"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

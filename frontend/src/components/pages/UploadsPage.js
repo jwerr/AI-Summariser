@@ -5,6 +5,10 @@ import { Download, Trash2, Star } from "lucide-react";
 const API = process.env.REACT_APP_API_URL || "";
 const LS_KEY = "ai_summariser_user";
 const AFTER_GOOGLE_KEY = "after_google_auth_destination";
+
+const DRIVE_LS_PREFIX = "uploads_drive_files_";
+const STARRED_LS_PREFIX = "uploads_starred_";
+
 // ---- helpers ----
 function readLocalUser() {
   try {
@@ -66,6 +70,7 @@ function normalizeUploadsFromMeetings(meetings) {
 
   return { manual, drive };
 }
+
 function mapDriveFilesToItems(files) {
   return (files || []).map((f) => ({
     id: `drive-${f.id}`,
@@ -78,6 +83,39 @@ function mapDriveFilesToItems(files) {
   }));
 }
 
+function loadDriveFromStorage(userId) {
+  try {
+    const raw = localStorage.getItem(`${DRIVE_LS_PREFIX}${userId}`);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveDriveToStorage(userId, files) {
+  try {
+    localStorage.setItem(
+      `${DRIVE_LS_PREFIX}${userId}`,
+      JSON.stringify(files || [])
+    );
+  } catch {
+    // ignore
+  }
+}
+
+function mergeById(primary, secondary) {
+  // primary wins on conflicts
+  const map = new Map();
+  for (const item of secondary || []) {
+    if (item && item.id) map.set(item.id, item);
+  }
+  for (const item of primary || []) {
+    if (item && item.id) map.set(item.id, item);
+  }
+  return Array.from(map.values());
+}
 
 // ---- component ----
 export default function UploadsPage() {
@@ -86,10 +124,40 @@ export default function UploadsPage() {
 
   const [activeTab, setActiveTab] = useState("manual"); // 'manual' | 'drive'
   const [manualFiles, setManualFiles] = useState([]);
-  const [driveFiles, setDriveFiles] = useState([]);
+  const [driveFiles, setDriveFiles] = useState(() =>
+    loadDriveFromStorage(userId)
+  );
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
-  const [starred, setStarred] = useState(() => new Set());
+
+  const [starred, setStarred] = useState(() => {
+    try {
+      const raw = localStorage.getItem(`${STARRED_LS_PREFIX}${userId}`);
+      if (!raw) return new Set();
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return new Set();
+      return new Set(arr);
+    } catch {
+      return new Set();
+    }
+  });
+
+  // Persist drive files whenever they change
+  useEffect(() => {
+    saveDriveToStorage(userId, driveFiles);
+  }, [driveFiles, userId]);
+
+  // Persist starred set whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        `${STARRED_LS_PREFIX}${userId}`,
+        JSON.stringify(Array.from(starred))
+      );
+    } catch {
+      // ignore
+    }
+  }, [starred, userId]);
 
   async function fetchUploads() {
     setLoading(true);
@@ -112,13 +180,18 @@ export default function UploadsPage() {
 
       const list = await r.json();
       const { manual, drive } = normalizeUploadsFromMeetings(list);
+
+      // Merge backend drive uploads with whatever we already cached
+      const cachedDrive = loadDriveFromStorage(userId);
+      const mergedDrive = mergeById(drive, cachedDrive);
+
       setManualFiles(manual);
-      setDriveFiles(drive);
+      setDriveFiles(mergedDrive);
     } catch (e) {
       console.error("Uploads fetch error:", e);
       setErr(e?.message || "Failed to load uploads.");
       setManualFiles([]);
-      setDriveFiles([]);
+      // keep existing driveFiles from storage instead of clearing
     } finally {
       setLoading(false);
     }
@@ -170,21 +243,21 @@ export default function UploadsPage() {
         headers: authHeaders(userId),
         redirect: "follow",
       });
-  
+
       if (!res.ok) {
         const t = await res.text().catch(() => "");
         throw new Error(
           t || `Failed to start Google Drive connection (HTTP ${res.status})`
         );
       }
-  
+
       let data = {};
       try {
         data = await res.json();
       } catch {
         data = {};
       }
-  
+
       const url =
         data.auth_url ||
         data.authUrl ||
@@ -192,14 +265,14 @@ export default function UploadsPage() {
         data.redirect_url ||
         data.redirect ||
         data.login_url;
-  
+
       if (url && typeof url === "string") {
         // 👇 remember we came from Uploads
         localStorage.setItem(AFTER_GOOGLE_KEY, "uploads");
         window.location.href = url; // go to Google consent screen
         return;
       }
-  
+
       // Fallback: still remember destination before hitting backend URL
       localStorage.setItem(AFTER_GOOGLE_KEY, "uploads");
       window.location.href = `${API}/api/google/auth-url`;
@@ -208,7 +281,6 @@ export default function UploadsPage() {
       setErr(e?.message || "Failed to connect Google Drive.");
     }
   };
-  
 
   const handleBackfill = async () => {
     setLoading(true);
@@ -219,21 +291,21 @@ export default function UploadsPage() {
         credentials: "include",
         headers: authHeaders(userId),
       });
-  
+
       if (!res.ok) {
         const t = await res.text().catch(() => "");
         throw new Error(t || "Backfill failed.");
       }
-  
+
       const data = await res.json();
       const files = data.files || [];
-  
+
       // 🔑 DIRECTLY push Drive files into the Drive tab list
       const items = mapDriveFilesToItems(files);
-      setDriveFiles(items);
-  
-      // If you still want to refresh manual uploads from meetings:
-      // await fetchUploads();
+
+      // Merge with any existing driveFiles (from backend or previous backfills)
+      setDriveFiles((prev) => mergeById(items, prev));
+      // fetchUploads is optional now; driveFiles are persisted via localStorage
     } catch (e) {
       console.error("Backfill transcripts error:", e);
       setErr(e?.message || "Failed to backfill transcripts from Google Drive.");
@@ -241,7 +313,6 @@ export default function UploadsPage() {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
