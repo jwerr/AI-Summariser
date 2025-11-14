@@ -9,18 +9,30 @@ const NOTES_KEY_PREFIX = "dashboard_notes_";
 
 /* ------------ date extraction helpers ------------ */
 const MONTHS = {
-  jan: 1, january: 1,
-  feb: 2, february: 2,
-  mar: 3, march: 3,
-  apr: 4, april: 4,
+  jan: 1,
+  january: 1,
+  feb: 2,
+  february: 2,
+  mar: 3,
+  march: 3,
+  apr: 4,
+  april: 4,
   may: 5,
-  jun: 6, june: 6,
-  jul: 7, july: 7,
-  aug: 8, august: 8,
-  sep: 9, sept: 9, september: 9,
-  oct: 10, october: 10,
-  nov: 11, november: 11,
-  dec: 12, december: 12,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  aug: 8,
+  august: 8,
+  sep: 9,
+  sept: 9,
+  september: 9,
+  oct: 10,
+  october: 10,
+  nov: 11,
+  november: 11,
+  dec: 12,
+  december: 12,
 };
 const p2 = (n) => String(n).padStart(2, "0");
 const toLocalISO = (d) =>
@@ -62,8 +74,7 @@ function extractUpcomingFromText(text) {
 
   // 2) ISO-like: 2025-11-12 or 2025-11-12 10:00
   {
-    const re =
-      /\b(20\d{2})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?\b/g;
+    const re = /\b(20\d{2})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?\b/g;
     for (const m of text.matchAll(re)) {
       const y = parseInt(m[1], 10);
       const mo = parseInt(m[2], 10);
@@ -157,10 +168,35 @@ function extractUpcomingFromText(text) {
     seen.add(it.start_iso);
     dedup.push(it);
   }
-  dedup.sort(
-    (a, b) => new Date(a.start_iso) - new Date(b.start_iso)
-  );
+  dedup.sort((a, b) => new Date(a.start_iso) - new Date(b.start_iso));
   return dedup.slice(0, 12);
+}
+
+/* ----- title helper for upcoming cards ----- */
+function inferUpcomingTitle(u = {}) {
+  // If backend already sent a title, respect it.
+  if (u.title && u.title.trim()) return u.title;
+
+  const blob = `${u.description || ""} ${u.source || ""}`.toLowerCase();
+
+  if (blob.includes("team lunch")) return "Team lunch";
+  if (blob.includes("lunch")) return "Team lunch";
+
+  if (blob.includes("retrospective") || blob.includes("retro")) {
+    return "Sprint retrospective";
+  }
+  if (blob.includes("planning")) {
+    return "Planning session";
+  }
+  if (blob.includes("demo")) {
+    return "Demo";
+  }
+  if (blob.includes("review")) {
+    return "Review meeting";
+  }
+
+  // Fallback
+  return "Follow-up meeting";
 }
 
 /* ------------------------------- component ------------------------------- */
@@ -218,6 +254,7 @@ export default function DashboardPage({ user }) {
           start_iso: it.start_iso || "",
           end_iso: it.end_iso || null,
           description: it.description || it.raw_quote || "",
+          source: it.raw_quote || "",
         }));
       } else {
         const bundle = [s.summary_text || "", ...(s.decisions || []), ...(s.action_items || [])]
@@ -371,7 +408,7 @@ export default function DashboardPage({ user }) {
                     title="Click to prefill the Event Composer"
                   >
                     <div className="font-medium text-gray-900 dark:text-slate-100">
-                      {u.title || "Follow-up meeting"}
+                      {inferUpcomingTitle(u)}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-slate-300 mt-1">
                       {u.start_iso
@@ -389,9 +426,9 @@ export default function DashboardPage({ user }) {
                 ))
               ) : (
                 <p className="col-span-full text-sm text-gray-600 dark:text-slate-300">
-                  No upcoming items detected yet. Click “Refresh from
-                  Summary” to pull dates mentioned in your latest summaries
-                  and decisions.
+                  No upcoming items detected yet. Click “Refresh from Summary”
+                  to pull dates mentioned in your latest summaries and
+                  decisions.
                 </p>
               )}
             </div>

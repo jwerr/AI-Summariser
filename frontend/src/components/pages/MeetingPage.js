@@ -1,7 +1,7 @@
 // src/pages/MeetingPage.js
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Download, Trash2, FileText, X } from "lucide-react";
+import { Download, Trash2, FileText, X, MessageCircle } from "lucide-react";
 
 const API = process.env.REACT_APP_API_URL || "";
 
@@ -13,7 +13,6 @@ const emptySummary = {
   summary_text: "",
 };
 
-// simple formatter for timestamps
 function formatDateTime(dt) {
   if (!dt) return "";
   const d = new Date(dt);
@@ -33,7 +32,6 @@ export default function MeetingPage() {
   const location = useLocation();
   const fileRef = useRef(null);
 
-  // If we came from Meetings list we already know name/platform
   const meetingFromList = location.state?.meeting || null;
 
   const [meeting, setMeeting] = useState(meetingFromList);
@@ -42,22 +40,25 @@ export default function MeetingPage() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [loadError, setLoadError] = useState("");
 
-  // local transcript info so UI updates immediately after upload
+  // transcript local info
   const [localTranscript, setLocalTranscript] = useState(null); // {name, uploadedAt}
 
-  // --------- transcript modal state ----------
+  // transcript modal
   const [showTranscriptModal, setShowTranscriptModal] = useState(false);
   const [transcriptText, setTranscriptText] = useState("");
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
   const [transcriptError, setTranscriptError] = useState("");
 
-  // --------- Q/A bot state ----------
+  // Q&A bot state (chat style)
   const [qaQuestion, setQaQuestion] = useState("");
-  const [qaAnswer, setQaAnswer] = useState("");
-  const [qaError, setQaError] = useState("");
+  const [qaMessages, setQaMessages] = useState([]); // [{role:"user"|"assistant", text}]
   const [isQaLoading, setIsQaLoading] = useState(false);
+  const [qaOpen, setQaOpen] = useState(false);
 
-  // --------- derive transcript info ----------
+  // optional: auto-scroll chat to bottom
+  const chatBodyRef = useRef(null);
+
+  // --------- transcript info ----------
   const transcriptPath =
     meeting?.transcript_download_url ||
     meeting?.transcript_url ||
@@ -79,7 +80,6 @@ export default function MeetingPage() {
     return { name, uploadedAt };
   })();
 
-  // final title resolution – keep list title if API doesn’t send one
   const title =
     meeting?.title || meetingFromList?.title || `Meeting #${id}`;
 
@@ -98,7 +98,6 @@ export default function MeetingPage() {
         }));
         setLoadError("");
       } else {
-        // only show hard error if we *don’t* have info from the list
         if (!meetingFromList) {
           setLoadError(`Could not load meeting #${id}`);
         }
@@ -204,13 +203,11 @@ export default function MeetingPage() {
         return;
       }
 
-      // immediately reflect in UI
       setLocalTranscript({
         name: file.name,
         uploadedAt: new Date().toISOString(),
       });
 
-      // also refresh server-side data if it exists
       await fetchMeeting();
       await fetchSummary();
     } finally {
@@ -220,13 +217,10 @@ export default function MeetingPage() {
   }
 
   function handleDownloadTranscript() {
-    // If it's a remote URL (Google Drive, etc.), open directly
     if (transcriptPath && /^https?:\/\//i.test(transcriptPath)) {
       window.open(transcriptPath, "_blank");
       return;
     }
-
-    // Local uploads → download the original file
     const url = `${API}/api/meetings/${id}/transcript?raw=true`;
     window.open(url, "_blank");
   }
@@ -266,29 +260,24 @@ export default function MeetingPage() {
       );
       setSummary(emptySummary);
       setTranscriptText("");
-      setQaAnswer("");
+      setQaMessages([]);
       setQaQuestion("");
-      setQaError("");
     }
   }
 
-  // --------- fetch transcript text for modal ----------
   async function openTranscriptModal() {
     if (!hasTranscript) return;
     setShowTranscriptModal(true);
     setTranscriptError("");
 
-    // if already loaded once, don't refetch
     if (transcriptText) return;
 
     setIsLoadingTranscript(true);
     try {
       let url;
       if (transcriptPath && /^https?:\/\//i.test(transcriptPath)) {
-        // direct HTTP(S) URL, e.g., Google Drive link
         url = transcriptPath;
       } else {
-        // for local uploads, backend returns plain text
         url = `${API}/api/meetings/${id}/transcript`;
       }
 
@@ -309,18 +298,29 @@ export default function MeetingPage() {
     }
   }
 
-  // --------- Q/A bot: call backend /api/qa ----------
   async function handleAskQuestion() {
-    if (!qaQuestion.trim()) return;
+    const question = qaQuestion.trim();
+    if (!question) return;
 
     if (!hasTranscript) {
-      setQaError("Please upload a transcript first.");
+      setQaMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: "Please upload a transcript first, then I can answer questions.",
+          error: true,
+        },
+      ]);
       return;
     }
 
+    // push user message immediately
+    setQaMessages((prev) => [
+      ...prev,
+      { role: "user", text: question },
+    ]);
+    setQaQuestion("");
     setIsQaLoading(true);
-    setQaError("");
-    setQaAnswer("");
 
     try {
       const res = await fetch(`${API}/api/qa`, {
@@ -331,7 +331,7 @@ export default function MeetingPage() {
         credentials: "include",
         body: JSON.stringify({
           meeting_id: Number(id),
-          question: qaQuestion.trim(),
+          question,
         }),
       });
 
@@ -340,10 +340,24 @@ export default function MeetingPage() {
         throw new Error(data.detail || "Failed to get answer from Q/A bot");
       }
 
-      setQaAnswer(data.answer || "");
+      const answer =
+        data.answer || "I couldn't find that in this meeting.";
+      setQaMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: answer },
+      ]);
     } catch (err) {
       console.error(err);
-      setQaError(err.message || "Something went wrong while asking the bot.");
+      setQaMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text:
+            err.message ||
+            "Something went wrong while asking the bot.",
+          error: true,
+        },
+      ]);
     } finally {
       setIsQaLoading(false);
     }
@@ -354,6 +368,12 @@ export default function MeetingPage() {
     fetchSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // auto-scroll chat body when messages change
+  useEffect(() => {
+    if (!chatBodyRef.current) return;
+    chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+  }, [qaMessages]);
 
   // --------- render ----------
   return (
@@ -494,60 +514,121 @@ export default function MeetingPage() {
             </p>
           </div>
         )}
+      </div>
 
-        {/* Q&A Bot card */}
-        <div className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
-          <h3 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
-            Ask about this meeting
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-            Type a question about the uploaded transcript. The bot will answer
-            using only this meeting&apos;s content.
-          </p>
-
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <input
-              type="text"
-              className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500/70"
-              placeholder={
-                hasTranscript
-                  ? "e.g., What did we decide about next week's deployment?"
-                  : "Upload a transcript first to enable Q&A"
-              }
-              value={qaQuestion}
-              onChange={(e) => setQaQuestion(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !isQaLoading) {
-                  handleAskQuestion();
-                }
-              }}
-              disabled={!hasTranscript || isQaLoading}
-            />
-            <button
-              type="button"
-              onClick={handleAskQuestion}
-              disabled={!hasTranscript || isQaLoading}
-              className="mt-1 sm:mt-0 px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isQaLoading ? "Thinking…" : "Ask"}
-            </button>
-          </div>
-
-          {qaError && (
-            <p className="mt-2 text-xs text-rose-600 dark:text-rose-300">
-              {qaError}
-            </p>
-          )}
-
-          {qaAnswer && (
-            <div className="mt-4 rounded-lg bg-purple-50/80 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-800 px-3 py-3 text-sm text-slate-800 dark:text-slate-100">
-              <p className="mb-1 text-xs uppercase tracking-wide text-purple-700 dark:text-purple-300">
-                Answer
-              </p>
-              <p className="whitespace-pre-wrap">{qaAnswer}</p>
+      {/* Floating Q&A chat bubble */}
+      <div className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-40">
+        {/* Chat window */}
+        {qaOpen && (
+          <div className="mb-3 w-80 sm:w-96 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white text-xs font-semibold">
+                  AI
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-50">
+                    Meeting Q&A
+                  </p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                    Ask anything about this transcript
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQaOpen(false)}
+                className="p-1 rounded-full hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-300"
+              >
+                <X size={14} />
+              </button>
             </div>
-          )}
-        </div>
+
+            <div
+              ref={chatBodyRef}
+              className="px-3 py-2 h-44 overflow-auto text-xs bg-slate-50/60 dark:bg-slate-950/40"
+            >
+              {qaMessages.length === 0 ? (
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Ask a question about the meeting, for example:
+                  <br />
+                  <span className="italic">
+                    “What did we decide about next week&apos;s deployment?”
+                  </span>
+                </p>
+              ) : (
+                qaMessages.map((m, idx) => {
+                  const isUser = m.role === "user";
+                  const bubbleClasses = isUser
+                    ? "bg-purple-600 text-white rounded-2xl rounded-br-sm"
+                    : m.error
+                    ? "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-50 rounded-2xl rounded-bl-sm"
+                    : "bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-50 rounded-2xl rounded-bl-sm";
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`mb-2 flex ${
+                        isUser ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      <div className={`max-w-[80%] px-3 py-2 text-[11px] ${bubbleClasses} shadow-sm`}>
+                        {m.text}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="px-3 py-2 border-top border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  className="flex-1 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500/70"
+                  placeholder={
+                    hasTranscript
+                      ? "Type your question…"
+                      : "Upload a transcript first"
+                  }
+                  value={qaQuestion}
+                  onChange={(e) => setQaQuestion(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !isQaLoading) {
+                      handleAskQuestion();
+                    }
+                  }}
+                  disabled={!hasTranscript || isQaLoading}
+                />
+                <button
+                  type="button"
+                  onClick={handleAskQuestion}
+                  disabled={!hasTranscript || isQaLoading}
+                  className="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isQaLoading ? "…" : "Send"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bubble button */}
+        <button
+          type="button"
+          onClick={() => hasTranscript && setQaOpen((v) => !v)}
+          disabled={!hasTranscript}
+          title={
+            hasTranscript
+              ? "Chat with the meeting bot"
+              : "Upload a transcript to enable Q&A"
+          }
+          className={`h-12 w-12 rounded-full shadow-xl flex items-center justify-center text-white text-xl font-semibold bg-gradient-to-br from-pink-400 via-fuchsia-500 to-blue-500 border border-white/40
+            ${!hasTranscript ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+          `}
+        >
+          <MessageCircle size={22} />
+        </button>
       </div>
 
       {/* Transcript Modal */}
@@ -557,7 +638,7 @@ export default function MeetingPage() {
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
               <div>
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-                  Transcript &bull; {transcriptMeta.name}
+                  Transcript • {transcriptMeta.name}
                 </h2>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   {formatDateTime(transcriptMeta.uploadedAt) || "Uploaded"}

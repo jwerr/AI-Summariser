@@ -1,0 +1,87 @@
+Long Test Transcripts for Web App Testing (With Future Dates)
+
+------------------------------------------------------------
+TRANSCRIPT 1 — PRODUCT ROADMAP PLANNING (Feb 12, 2026)
+------------------------------------------------------------
+[00:00] Project Manager (Lisa): Good morning team. Today’s agenda is to finalize the Q2 2026 roadmap. We need decisions on the release timeline and feature readiness.
+[00:23] Backend Lead (Arjun): From the backend perspective, the transcript ingestion pipeline is 100% complete. We just need to test automatic ingestion using real Zoom events.
+[00:40] QA Lead (Mina): For that, we have a scheduled Zoom test meeting on March 3rd, 2026 at 11:30 AM. I'll simulate transcript upload on the same day.
+[01:01] Lisa: Great. Let’s talk about the summarizer. We want the new prompt format to be consistent before the Q2 release.
+[01:13] AI Engineer (Dev): Yes, I updated the SYSTEM prompt last night. Now the summary returns a one-liner, key points, decisions, and action items with owners. Testing shows 82% accuracy on identifying deadlines.
+[01:40] Frontend Lead (Sarah): On the UI side, the Dashboard is mostly ready. The Notes panel autosaves correctly. The Q&A Chatbot panel needs styling improvements but functionally it works.
+[02:10] Lisa: Good. About events: We need all upcoming tasks with dates between March–June 2026 to trigger calendar suggestions automatically.
+[02:29] Dev: We already detect sentences like “meeting on April 8th, 2026” or “submit report by May 2nd, 2026.” CalendarPanel currently reads these timestamps and converts them into event suggestions.
+[02:52] Mina: For QA, I will test three flows next week: 1) Manual upload 2) Google Drive import 3) Zoom auto-ingestion — All before March 10th, 2026.
+[03:20] Sarah: Can we set a UI freeze by March 15th?
+[03:23] Lisa: Yes. UI freeze on March 15th, feature freeze on March 20th, and code freeze on April 1st, 2026.
+[03:33] Dev: That gives us enough time for LLM fine-tuning and performance optimization.
+[03:48] Lisa: Action item for Arjun — complete Zoom webhook testing by March 5th, 2026.
+[04:04] Arjun: Noted. I'll share webhook validation logs in the next check-in.
+[04:14] Sarah: We also need to fix the bug where calendar events sometimes show "invalid date" when only time is provided.
+[04:25] Dev: Already patched. If no end-time exists, we use a default 1-hour duration.
+[04:38] Lisa: Great. Next topic — multi-user support. We want meeting summaries tied to specific user accounts by April 10th, 2026.
+[05:02] Arjun: Authentication is stable. We just need to add user-scoped meeting IDs.
+[05:13] Mina: I’ll run regression tests after that update.
+[05:21] Lisa: Perfect. Let's finalize the roadmap dates:
+- Zoom auto-ingest testing: March 3–10, 2026
+- UI Freeze: March 15, 2026
+- Feature Freeze: March 20, 2026
+- Code Freeze: April 1, 2026
+- Release Candidate Build: April 12, 2026
+- Final Q2 Release: May 5, 2026
+[06:00] Sarah: Can we add one last item? The Drive fetch list sometimes returns blank entries. We should fix that before code freeze.
+[06:12] Arjun: Yes, I’ll push the fix by February 16th.
+[06:26] Lisa: Good. Anything else?
+[06:30] Dev: No, that covers everything.
+[06:36] Lisa: Alright team, great work. Next sync is on February 19th, 2026 at 3 PM.
+
+------------------------------------------------------------
+TRANSCRIPT 2 — ENGINEERING ARCHITECTURE REVIEW (April 8, 2026)
+------------------------------------------------------------
+[00:00] Engineering Manager (Priya): Today we’re reviewing our architecture for scaling. The AI Summariser must handle up to 20,000 transcripts per month by July 2026.
+[00:19] Backend Engineer (Leo): For that, I recommend migrating transcript storage into PostgreSQL by June 1st, 2026.
+[00:38] ML Engineer (Tom): On the AI side, I’ll implement caching for repeated summaries by May 12th, 2026.
+[00:52] Priya: Perfect. What about the Q&A chatbot?
+[00:56] Tom: Testing is complete. Retrieval accuracy is now 90%. We plan to upgrade embeddings to the large model by April 29th, 2026.
+[01:22] Frontend Dev (Ana): UI updates are almost done. The transcript viewer works smoothly. Need scroll optimization.
+[01:40] Priya: Please finish that by April 15th.
+[01:49] Leo: Calendar generation misses dates like “June 21st evening.”
+[02:07] Tom: Added a new parser that handles morning/afternoon/evening phrases.
+[02:26] Priya: Prepare for client demo on May 1st, 2026 at 2 PM.
+[02:48] Leo: Multi-tenant support by April 27th.
+[03:09] Priya: Key deadlines:
+- Scroll optimization: April 15, 2026
+- Embedding upgrade: April 29, 2026
+- Multi-tenant support: April 27, 2026
+- Client demo: May 1, 2026
+- Postgres migration: June 1, 2026
+[03:55] Ana: Need Drive pagination.
+[04:04] Leo: Added pagination by April 18.
+[04:31] Priya: Final sync: April 25th, 4 PM.
+
+------------------------------------------------------------
+TRANSCRIPT 3 — MARKETING + PRODUCT STRATEGY MEETING (July 15, 2026)
+------------------------------------------------------------
+[00:00] Marketing Lead (Nina): Today we’re discussing product launch strategy for Q3 2026.
+[00:17] Product Manager (Sam): Engineering will complete all features by July 28th, 2026.
+[00:36] Nina: Beta program begins August 10th, 2026.
+[00:52] Engineering Lead (Marco): Teams integration by August 5th.
+[01:15] ML Engineer (Joey): Summarizer accuracy to reach 92% by August 1st.
+[01:28] Sam: Need screenshots by July 29th.
+[01:34] Marco: Calendar system detects date ranges and recurring events.
+[02:17] Marketing needs:
+- Product video by Aug 7
+- Landing page by Aug 12
+- Social campaign by Aug 15
+[02:41] Marco: Q&A Chatbot confidence scoring deploys July 20.
+[03:38] Joey: GPU testing on July 22.
+[03:48] Nina: Messaging tests July 23–27.
+[03:59] Final deadlines:
+- Chatbot upgrade: July 20, 2026
+- Pricing sign-off: July 25, 2026
+- Screenshots: July 29, 2026
+- Beta invite: July 30, 2026
+- Beta launch: Aug 10, 2026
+- Teams integration: Aug 5, 2026
+- Launch review: Aug 3, 2026
+- Public launch: Aug 20, 2026

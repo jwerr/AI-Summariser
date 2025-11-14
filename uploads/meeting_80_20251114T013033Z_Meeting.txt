@@ -1,0 +1,242 @@
+Google Meet Transcript – Project Sync & Team Lunch Planning
+Date: November 20, 2025
+Duration: 10:00 AM – 11:00 AM EST
+
+Participants:
+- Arul (Backend Developer)
+- Alex (Tech Lead)
+- Priya (Frontend Developer)
+- John (Project Manager)
+- Sarah (QA Engineer)
+- Michael (DevOps)
+
+------------------------------------------------------------
+
+10:00 AM — John:
+Good morning, everyone! Let's get started. We have a packed agenda today: current sprint updates, the upcoming release, the issue Priya was working on, and the team lunch. Sound good?
+
+10:00 AM — Alex:
+Yep, let’s move fast today. I have another call at 11:15.
+
+10:01 AM — Priya:
+Sounds good.
+
+10:01 AM — Arul:
+All good.
+
+10:02 AM — Michael:
+Ready.
+
+10:02 AM — Sarah:
+Good to go.
+
+------------------------------------------------------------
+10:03 AM — John:
+Alright, quick updates. Arul, you go first. How’s the API refactoring?
+
+10:03 AM — Arul:
+Yeah, so the refactor is about 80% done. The only pending part is integrating the new authentication middleware with the transcript upload endpoint. Should be done today by evening.
+
+10:04 AM — Alex:
+80%? Arul, last Friday you said you were almost done. What changed?
+
+10:04 AM — Arul:
+Yeah, I underestimated the merging conflicts with the dev branch. Priya’s UI changes affected some routes, so I had to rework the schema mapping.
+
+10:05 AM — Alex:
+(sighs) Okay… fine. Just make sure it doesn’t slip again. We can’t afford delays this sprint.
+
+------------------------------------------------------------
+10:05 AM — John:
+Priya, your turn. How’s the Meeting Summary UI revamp?
+
+10:06 AM — Priya:
+About that… I’ve completed the new layout, search bar, and dark mode fixes. I still need to push the transcript viewer update. I’ll do it today.
+
+10:06 AM — Alex:
+Wait, what? You said transcript viewer would be done *yesterday*. QA already tested the old component!
+
+10:07 AM — Priya:
+I know, but I had to redo the modal because the design kept breaking in dark mode. And the Q&A bot placement needed adjustments.
+
+10:07 AM — Alex:
+Priya, we’ve talked about this. You keep starting multiple UI tasks at once and then delaying the critical ones. We needed the transcript viewer for testing this morning.
+
+10:08 AM — Priya:
+I didn’t “delay”—I was making sure it looks consistent! The old UI was a mess.
+
+10:08 AM — Alex:
+You could’ve pushed *something*. A partial implementation is better than no implementation.
+
+10:09 AM — John:
+Alright, okay—let’s not escalate. Priya, can you commit to finishing it today?
+
+10:09 AM — Priya:
+Yes, I will finish it today. I’ll pair with Arul if I need help with backend integration.
+
+10:10 AM — Alex:
+Good. Please prioritize properly. We're really cutting it close.
+
+------------------------------------------------------------
+10:11 AM — Sarah:
+Um… small update from QA. The summarization job sometimes runs twice when the button is clicked quickly. We need a debounce or something.
+
+10:11 AM — Arul:
+Yeah I saw that. I’ll fix it by disabling the button until the job returns.
+
+10:12 AM — Sarah:
+Great, thank you!
+
+------------------------------------------------------------
+10:13 AM — John:
+Michael, deployment pipeline status?
+
+10:13 AM — Michael:
+Everything’s on schedule. The staging pipeline is stable. I’m adding OpenAI key rotation automation today. Shouldn’t affect anyone.
+
+10:14 AM — Alex:
+Good. Push it once done; we need stable infra for next week’s demo.
+
+------------------------------------------------------------
+10:16 AM — John:
+Now, upcoming release planning. Next week, we’re deploying:
+- Transcript Upload Fixes (Arul)
+- Transcript Viewer Modal (Priya)
+- QA Bot Improvements (Alex + Arul)
+- UI Theme System (Priya)
+- Logging Expansion (Michael)
+
+Anyone see any blockers?
+
+10:17 AM — Priya:
+I just need clarification on the “View Transcript” modal. Should we allow editing inside it?
+
+10:17 AM — Alex:
+No editing. Only viewing and downloading. Editing is out of scope and will break version control.
+
+10:18 AM — Priya:
+Okay got it.
+
+------------------------------------------------------------
+10:20 AM — John:
+Alright, next topic—team lunch!  
+We skipped it last month, so let’s actually plan it this time. Suggestions?
+
+10:21 AM — Sarah:
+Can we do Korean BBQ this time?
+
+10:21 AM — Michael:
+YES. Korean BBQ. Please.
+
+10:22 AM — Priya:
+I’m vegetarian 😭
+
+10:22 AM — Alex:
+Don’t worry, they have veg stuff too.
+
+10:22 AM — Priya:
+No they don’t. The last time everything smelled like meat.
+
+10:23 AM — Arul:
+We can also do Indian buffet. Everyone likes naan.
+
+10:23 AM — Michael:
+I like naan. I don’t know what half the other things are but naan is solid.
+
+10:24 AM — Sarah:
+🤣 Michael please.
+
+10:24 AM — John:
+Okay, how about next Friday? November 21st?
+
+10:25 AM — Alex:
+Works for me.
+
+10:25 AM — Priya:
+Works.
+
+10:25 AM — Arul:
+Yep.
+
+10:26 AM — Michael:
+As long as food exists, I’m fine.
+
+10:26 AM — Sarah:
+Same.
+
+------------------------------------------------------------
+10:28 AM — John:
+Before we wrap, Priya and Alex—anything you two want to align on after the heated moment earlier?
+
+10:29 AM — Priya:
+(sighs) Yeah… It’s fine. I’ll focus on the transcript viewer today. I wasn’t avoiding it—I just wanted consistency.
+
+10:30 AM — Alex:
+I get it. I just need the critical tasks first. Let’s sync at 4 PM?
+
+10:30 AM — Priya:
+Okay.
+
+------------------------------------------------------------
+10:35 AM — John:
+One last thing—Arul, can you add a toast notification after transcript upload? Users need confirmation.
+
+10:36 AM — Arul:
+Yeah, I’ll add that.
+
+10:36 AM — Alex:
+Also add a loading shimmer for the summary card when fetching.
+
+10:37 AM — Arul:
+Sure.
+
+------------------------------------------------------------
+10:40 AM — Sarah:
+QA found one more issue—the “dark mode” text for timestamps on upload status is barely readable.
+
+10:40 AM — Priya:
+Oh I fixed that in my new theme. It’ll look better.
+
+10:41 AM — Alex:
+Please push that theme file today so frontend doesn’t break again.
+
+10:41 AM — Priya:
+Will do.
+
+------------------------------------------------------------
+10:50 AM — John:
+Anything else before we close?
+
+10:50 AM — Michael:
+Yeah—should we add a “Help” page for the Q&A bot? People keep asking how to use it.
+
+10:51 AM — Alex:
+Good idea. Let’s add a tooltip for now, page later.
+
+10:52 AM — Arul:
+I can add a small info icon with instructions.
+
+10:52 AM — John:
+Perfect.
+
+------------------------------------------------------------
+10:58 AM — John:
+Alright team, good meeting. Let’s push the major updates today. Ping me if anything blocks you.
+
+10:59 AM — Priya:
+Thanks everyone.
+
+10:59 AM — Alex:
+Later.
+
+10:59 AM — Arul:
+Bye!
+
+10:59 AM — Sarah:
+See ya.
+
+11:00 AM — Michael:
+Peace ✌️
+
+------------------------------------------------------------
+(End of Meeting)

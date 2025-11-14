@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
+import FloatingBackButton from "../FloatingBackButton";
 
 const LS_KEY = "ai_summariser_user";
 
@@ -143,6 +144,7 @@ export default function AppShell({
           <Outlet context={{ logout }} />
         </div>
       </main>
+      <FloatingBackButton />
     </div>
   );
 }

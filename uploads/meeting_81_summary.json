@@ -1,0 +1,37 @@
+{
+  "meeting_id": 81,
+  "title": "This is meeting number 2",
+  "user_id": 5,
+  "platform": "Zoom",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser/uploads/meeting_81_20251114T014129Z_Long_Test_Transcripts.txt",
+  "generated_at": "2025-11-14T01:41:31.484145Z",
+  "status": "ready",
+  "summary_text": "Long Test Transcripts for Web App Testing (With Future Dates) ------------------------------------------------------------ TRANSCRIPT 1 — PRODUCT ROADMAP PLANNING (Feb 12, 2026)…",
+  "key_points": [
+    "Finalizing Q2 2026 roadmap",
+    "Transcript ingestion pipeline complete",
+    "Scheduled Zoom test meeting on March 3, 2026",
+    "New prompt format for summarizer",
+    "UI updates and functionality discussed",
+    "Multi-user support for meeting summaries",
+    "Scaling architecture for AI summarizer",
+    "Product launch strategy for Q3 2026"
+  ],
+  "decisions": [
+    "UI freeze on March 15, 2026",
+    "Feature freeze on March 20, 2026",
+    "Code freeze on April 1, 2026",
+    "Final Q2 release on May 5, 2026",
+    "Postgres migration by June 1, 2026"
+  ],
+  "action_items": [
+    "Arjun to complete Zoom webhook testing by March 5, 2026",
+    "Mina to test three flows before March 10, 2026",
+    "Fix calendar event bug by February 16, 2026",
+    "Tom to implement caching by May 12, 2026",
+    "Ana to finish scroll optimization by April 15, 2026",
+    "Leo to add pagination by April 18, 2026",
+    "Screenshots needed by July 29, 2026"
+  ],
+  "completed_at": "2025-11-14T01:41:39.918272Z"
+}

@@ -1,0 +1,36 @@
+{
+  "meeting_id": 80,
+  "title": "Team Meeting",
+  "user_id": 5,
+  "platform": "Google Meet",
+  "transcript_path": "/Users/shivayokeshwari/AI_Summariser/uploads/meeting_80_20251114T013033Z_Meeting.txt",
+  "generated_at": "2025-11-14T01:30:54.934347Z",
+  "status": "ready",
+  "summary_text": "Google Meet Transcript – Project Sync & Team Lunch Planning Date: November 20, 2025 Duration: 10:00 AM – 11:00 AM EST Participants: - Arul (Backend Developer) - Alex (Tech Lead) - Priya (Frontend Developer) - John…",
+  "key_points": [
+    "Current sprint updates",
+    "Upcoming release planning",
+    "Team lunch planning",
+    "API refactoring status",
+    "Meeting Summary UI revamp status",
+    "Deployment pipeline status",
+    "QA issues and fixes",
+    "Discussion on editing capabilities for transcript modal"
+  ],
+  "decisions": [
+    "Transcript viewer will not allow editing",
+    "Team lunch planned for November 21st",
+    "Add a tooltip for the Q&A bot instead of a help page for now"
+  ],
+  "action_items": [
+    "Arul to finish API refactoring by evening",
+    "Priya to complete transcript viewer update today",
+    "Arul to fix QA issue with summarization job",
+    "Michael to add OpenAI key rotation automation today",
+    "Arul to add toast notification after transcript upload",
+    "Arul to add loading shimmer for summary card",
+    "Priya to push new theme file today",
+    "Arul to add info icon with instructions for Q&A bot"
+  ],
+  "completed_at": "2025-11-14T01:30:59.280048Z"
+}
