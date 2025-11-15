@@ -90,15 +90,3 @@ Working demo at the end of each sprint.
 📜 License
 For academic use – Clark University MSCS 3999 Capstone Project.
 
-yaml
-Copy code
-
----
-
-⚡ Do you also want me to **create the initial `requirements.txt` and `package.json` placeholders** (so the repo looks more complete before coding starts)?
-
-
-
-
-
-Ask ChatGPT
